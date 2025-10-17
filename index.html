@@ -1,18 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=, initial-scale=1.0">
     <title>Document</title>
-    <!-- <script type="module" src="./scripts/store.js"></script> -->
-    <script type="module" src="./scripts/user-greeting.js"></script>
-    <script type="module" src="./scripts/counter-display.js"></script>
-    <script type="module" src="./scripts/counter-control.js"></script>
+    <base href="/experiments/wc-test/">
+    <script src="./test/custom-renderer/handlebars/handlebars.min.4.7.8.js" defer></script>
+    <!-- <script type="module" src="./test/components/user-greeting/component.js" defer></script>
+    <script type="module" src="./test/components/counter-display/component.js" defer></script>
+    <script type="module" src="./test/components/counter-control/component.js" defer></script>
+    <script type="module" src="./test/components/guest-control/component.js" defer></script> -->
+    <script type="module" src="./test/components/index.js" defer></script>
+    <!-- <link rel="stylesheet" href="./test/minireset.min.css">
+    <link rel="stylesheet" href="./test/global--full-page.css"> -->
 </head>
+
 <body>
-    
-    <user-greeting></user-greeting>
-    <counter-display></counter-display>
-    <counter-control></counter-control>
+
+    <router-container>
+        <header>
+            <nav>
+                <router-link to="/">Home</router-link> |
+                <router-link to="/about">About</router-link> |
+                <router-link to="/users/jane">Jane's Profile</router-link> |
+                <router-link to="/users/john">John's Profile</router-link>
+            </nav>
+        </header>
+
+        <main>
+            sfsdf
+            <router-switch>
+                <router-route path="/">
+                    <h2>Home Page</h2>
+                    <p>Welcome to the main page!</p>
+                </router-route>
+
+                <router-route path="/about">
+                    <h2>About Us</h2>
+                    <p>This is the about page.</p>
+                </router-route>
+
+                <!-- This is a dynamic route -->
+                <router-route path="/users/:id">
+                    Beep Boop
+                </router-route>
+
+                <!-- This is a catch all route -->
+                <!-- <router-route path="*">
+                    404
+                </router-route> -->
+            </router-switch>
+        </main>
+    </router-container>
 </body>
+
 </html>

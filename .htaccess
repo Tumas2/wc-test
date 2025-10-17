@@ -1,0 +1,10 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # Set the base path for your application
+  RewriteBase /experiments/wc-test/
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  # Redirect all other requests to your index.html
+  RewriteRule . /experiments/wc-test/index.html [L]
+</IfModule>

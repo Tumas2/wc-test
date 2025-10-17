@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./test/custom-renderer/handlebars/handlebars.min.4.7.8.js" defer></script>
+    <!-- <script type="module" src="./test/components/user-greeting/component.js" defer></script>
+    <script type="module" src="./test/components/counter-display/component.js" defer></script>
+    <script type="module" src="./test/components/counter-control/component.js" defer></script>
+    <script type="module" src="./test/components/guest-control/component.js" defer></script> -->
+    <script type="module" src="./test/components/index.js" defer></script>
+</head>
+<body>
+    
+    <user-greeting>
+        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Autem, dignissimos. Temporibus dolorem reiciendis soluta id, tempora porro quaerat dolore maxime pariatur dolor repudiandae quo unde, ducimus aliquid iure debitis culpa!</p>
+    </user-greeting>
+    <counter-display></counter-display>
+    <counter-control>
+        <template shadowrootmode="open">
+            <button onclick="increment">Increment Count ??</button>
+        </template>
+    </counter-control>
+    <guest-control></guest-control>
+
+    <br>
+    <button>Normal button</button>
+</body>
+</html>

@@ -1,0 +1,7 @@
+<h1>Welcome back, <span>{{user.name}}</span></span>!</h1>
+<ul class="people_list">
+    {{#each user.people}}
+        <li>{{this}}</li>
+    {{/each}}
+</ul>
+<slot></slot>

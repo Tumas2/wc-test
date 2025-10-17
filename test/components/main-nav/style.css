@@ -1,0 +1,21 @@
+menu {
+    font-size: 1rem;
+
+    ul {
+        display: flex;
+
+        li {
+
+            a {
+                display: block;
+                padding: 0.5em 0.75em;
+                text-decoration: none;
+                border-bottom: 3px solid transparent;
+
+                &:hover {
+                    border-bottom-color: black;
+                }
+            }
+        }
+    }
+}
