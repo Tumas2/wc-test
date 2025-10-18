@@ -251,7 +251,8 @@ export class StatefulElement extends HTMLElement {
 
         this._removeEventListeners();
         const fullHtml = strings.reduce((acc, str, i) => acc + str + (values[i] || ''), '');
-        this.shadowRoot.innerHTML = fullHtml;
+        // TODO: Switch to setHTML when in stable
+        this.shadowRoot.setHTMLUnsafe(fullHtml);
 
         this.shadowRoot.querySelectorAll('*').forEach(element => {
             for (const attr of element.attributes) {

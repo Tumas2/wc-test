@@ -1,11 +1,10 @@
+import { loadHTML } from '../../../src/html-loader.js';
 import { StatefulElement } from '../../../src/StatefulElement.js';
 import { routerStore } from '../../stores/routerStore.js';
 
 class RouterSwitch extends StatefulElement {
     constructor() {
         super();
-        // Ensure the switch itself is a block container so it can host
-        // the visible block-level route components.
         this.style.display = 'block';
     }
 
@@ -13,62 +12,68 @@ class RouterSwitch extends StatefulElement {
         return { router: routerStore };
     }
 
-    render() {
+    /**
+     * The render method now destroys and re-creates the route content.
+     */
+    async render() {
         this._syncState();
-
         const currentPath = this.state.router?.pathname;
-        if (currentPath === undefined) {
-            return; // Exit early if the path isn't available yet
-        }
+        if (currentPath === undefined) return;
 
-        let hasMatch = false;
+        let match = null;
+        let routeToRender = null;
         let catchAllRoute = null;
 
+        // Find the first matching route or the catch-all
         for (const child of this.children) {
-            if (child.tagName === 'ROUTER-ROUTE' && child.getAttribute('path') === '*') {
-                catchAllRoute = child;
-                break;
-            }
-        }
+            if (child.tagName !== 'ROUTER-ROUTE') continue;
 
-        for (const child of this.children) {
-            if (child.tagName !== 'ROUTER-ROUTE' || child.getAttribute('path') === '*') {
+            const routePath = child.getAttribute('path');
+            if (routePath === '*') {
+                catchAllRoute = child;
                 continue;
             }
 
-            const routePath = child.getAttribute('path');
-            const match = this.matchPath(routePath, currentPath);
+            if (!match) {
+                const routeMatch = this.matchPath(routePath, currentPath);
+                if (routeMatch) {
+                    match = routeMatch;
+                    routeToRender = child;
+                }
+            }
+        }
 
-            if (match && !hasMatch) {
-                hasMatch = true;
-                // Activate the matching route
-                if (typeof child.activate === 'function') {
-                    child.activate();
-                }
-                const currentParams = JSON.stringify(this.state.router.params);
-                const newParams = JSON.stringify(match.params);
-                if (currentParams !== newParams) {
-                    routerStore.setState({ params: match.params });
-                }
+        // If no specific route matched, use the catch-all
+        if (!routeToRender && catchAllRoute) {
+            routeToRender = catchAllRoute;
+            match = { params: {} };
+        }
+
+        // Update the store with the new params
+        const currentParams = JSON.stringify(this.state.router.params);
+        const newParams = JSON.stringify(match ? match.params : {});
+        if (currentParams !== newParams) {
+            routerStore.setState({ params: match ? match.params : {} });
+        }
+
+        // Get the content for the matched route
+        let finalHtml = '<p>Route not found</p>'; // Default content
+        if (routeToRender) {
+            const src = routeToRender.getAttribute('src');
+            if (src) {
+                // If there's a src, lazy-load the content from the file
+                finalHtml = await loadHTML(src);
             } else {
-                // Deactivate all other routes
-                if (typeof child.deactivate === 'function') {
-                    child.deactivate();
-                }
+                // Otherwise, use the content from inside the <router-route> tag
+                finalHtml = routeToRender.innerHTML;
             }
         }
 
-        // Handle the catch-all route
-        if (catchAllRoute) {
-            if (!hasMatch && typeof catchAllRoute.activate === 'function') {
-                catchAllRoute.activate();
-            } else if (hasMatch && typeof catchAllRoute.deactivate === 'function') {
-                catchAllRoute.deactivate();
-            }
-        }
-
-        // This ensures the children are always available in the DOM
-        this.html([`<slot></slot>`]);
+        // Render the final HTML into this component's shadow DOM
+        // The renderer will process any placeholders in the loaded content
+        const renderer = this.getRenderer();
+        const context = { ...this.initialData(), ...this.state };
+        this.html([renderer(finalHtml, context)]);
     }
 
     /**
@@ -99,7 +104,7 @@ class RouterSwitch extends StatefulElement {
             acc[name] = match[index + 1];
             return acc;
         }, {});
-        
+
         return { path: match[0], params };
     }
 }
