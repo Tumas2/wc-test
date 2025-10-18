@@ -21,11 +21,11 @@ export class StatefulElement extends HTMLElement {
      */
     constructor() {
         super();
-        
+
         if (!this.shadowRoot) {
             this.attachShadow({ mode: 'open' });
         }
-        
+
         // Adopt any stylesheets provided by the component subclass.
         this.shadowRoot.adoptedStyleSheets = this.getStyles();
 
@@ -34,7 +34,7 @@ export class StatefulElement extends HTMLElement {
          * @type {object}
          */
         this.state = {};
-        
+
         /**
          * The component's template string, loaded from an external file or DSD.
          * @type {string | null}
@@ -47,7 +47,7 @@ export class StatefulElement extends HTMLElement {
          * @description Holds the map of store instances provided by the component.
          */
         this._stores = null;
-        
+
         /**
          * @private
          * @type {Array<{element: Element, eventName: string, handler: Function}>}
@@ -62,7 +62,7 @@ export class StatefulElement extends HTMLElement {
          */
         this._renderCallback = this.render.bind(this);
     }
-  
+
     /**
      * Lifecycle method called when the component is added to the DOM.
      * Handles template loading, DSD hydration, and store subscriptions.
@@ -70,7 +70,7 @@ export class StatefulElement extends HTMLElement {
      */
     async connectedCallback() {
         let clientTemplateFound = false;
-        
+
         const templatePath = this.getTemplatePath();
         if (templatePath) {
             this.template = await loadHTML(templatePath);
@@ -93,26 +93,43 @@ export class StatefulElement extends HTMLElement {
         if (typeof this._stores !== 'object' || this._stores === null) {
             throw new Error('getStores() must be implemented and return an object of store instances.');
         }
-        
+
         for (const key in this._stores) {
             this._stores[key].subscribe(this._renderCallback);
         }
-        
+
         this.render();
     }
-  
+
     /**
      * Lifecycle method called when the component is removed from the DOM.
-     * Handles cleanup of event listeners and store subscriptions.
+     * Handles cleanup of listeners, subscriptions, and calls the onUnmount hook.
      */
     disconnectedCallback() {
         this._removeEventListeners();
-        if (!this._stores) return;
-        for (const key in this._stores) {
-            this._stores[key].unsubscribe(this._renderCallback);
+        if (this._stores) {
+            for (const key in this._stores) {
+                this._stores[key].unsubscribe(this._renderCallback);
+            }
         }
+        // Call the user-defined unmount hook
+        this.onUnmount();
     }
-  
+
+    /**
+     * @abstract
+     * A lifecycle hook that subclasses can implement to run cleanup logic
+     * when the component is removed from the DOM.
+     * @example
+     * onUnmount() {
+     * // This store will be reset every time the user leaves this route
+     * this.resetState('myRouteSpecificStore');
+     * }
+     */
+    onUnmount() {
+        // This method is intended to be overridden by subclasses.
+    }
+
     /**
      * Updates the state of a specified store, triggering a re-render.
      * @param {string} storeName - The key of the store as defined in getStores().
@@ -124,6 +141,19 @@ export class StatefulElement extends HTMLElement {
             store.setState(newState);
         } else {
             console.warn(`Store with name "${storeName}" not found.`);
+        }
+    }
+
+    /**
+     * Resets a specific store to its initial state.
+     * @param {string} storeName The key of the store as defined in getStores().
+     */
+    resetState(storeName) {
+        const store = this._stores?.[storeName];
+        if (store && typeof store.resetState === 'function') {
+            store.resetState();
+        } else {
+            // console.warn(`Store with name "${storeName}" not found or it does not have a resetState method.`);
         }
     }
 
@@ -270,7 +300,7 @@ export class StatefulElement extends HTMLElement {
                 }
             }
         });
-        
+
         let newActiveElement = null;
         if (activeElementId) {
             newActiveElement = this.shadowRoot.querySelector(`#${activeElementId}`);
@@ -288,19 +318,35 @@ export class StatefulElement extends HTMLElement {
 
     /**
      * @private
-     * The built-in default templating engine. Replaces {{key}} placeholders.
+     * The built-in templating engine. Replaces {{key}} or {{key || 'fallback'}} placeholders.
      * @param {string} template - The template string.
      * @param {object} data - The state object.
      * @returns {string} The interpolated HTML string.
      */
     _interpolate(template, data) {
         if (!template) return '';
-        return template.replace(/{{\s*([\w.]+)\s*}}/g, (match, key) => {
+
+        // This regex now captures the key and an optional fallback value.
+        // It matches: {{ key.path || 'fallback' }}
+        return template.replace(/{{\s*([\w.]+)\s*(?:\|\|\s*(['"])(.*?)\2)?\s*}}/g, (match, key, quote, fallback) => {
+            // 1. Resolve the key to get its value from the state object.
             const value = key.split('.').reduce((obj, prop) => obj && obj[prop], data);
-            return value !== undefined ? value : match;
+
+            // 2. If the value is valid (not null or undefined), return it.
+            if (value !== null && value !== undefined) {
+                return value;
+            }
+
+            // 3. If the value is invalid, check if a fallback was provided.
+            if (fallback !== undefined) {
+                return fallback;
+            }
+
+            // 4. If no value and no fallback, return an empty string.
+            return '';
         });
     }
-    
+
     /**
      * @private
      * Syncs the component's `this.state` property with the latest state from all stores.
@@ -311,7 +357,7 @@ export class StatefulElement extends HTMLElement {
             this.state[key] = this._stores[key].getState();
         }
     }
-    
+
     /**
      * @private
      * Removes all tracked event listeners to prevent memory leaks.
@@ -345,7 +391,7 @@ export class StatefulElement extends HTMLElement {
         }
         return path;
     }
-    
+
     /**
      * @private
      * Finds an element within the shadow DOM using a positional path.

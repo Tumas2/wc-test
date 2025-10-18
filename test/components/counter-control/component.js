@@ -15,34 +15,19 @@ class CounterControl extends StatefulElement {
       	return [globalStyles, localStyles];
     }
 
-    /**
-     * Required: Specify which store to listen to.
-     */
     getStores() {
         return { counter: counterStore };
     }
 
-    /**
-     * This method is now automatically wired up by the `html` tag.
-     */
     increment() {
         this.setState('counter', { count: this.state.counter.count + 1 });
         console.log('Increment button clicked!');
     }
 
-    /**
-     * Required: Define the component's UI using the `this.html` tag.
-     */
-    // view() {
-	// 	if (!this.template) {
-	// 		return this.html``; 
-	// 	}
+    onUnmount() {
+        this.resetState('counter');
+    }
 
-    //     let renderedHtml = this.template;
-
-    //     // return this.html`<button onclick="increment">Increment Count</button>`;
-	// 	return this.html`${renderedHtml}`;		
-    // }
 }
 
 customElements.define('counter-control', CounterControl);

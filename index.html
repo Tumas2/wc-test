@@ -24,7 +24,8 @@
                 <router-link to="/">Home</router-link> |
                 <router-link to="/about">About</router-link> |
                 <router-link to="/users/jane">Jane's Profile</router-link> |
-                <router-link to="/users/john">John's Profile</router-link>
+                <router-link to="/users/john">John's Profile</router-link> |
+                <router-link to="/users/john/doe">John's Sub Profile</router-link>
             </nav>
         </header>
 
@@ -41,7 +42,13 @@
                 <!-- This is a dynamic route -->
                 <router-route path="/users/:id">
                     User ID
-                    <!-- <user-profile></user-profile> -->
+                    <user-profile></user-profile>
+                </router-route>
+
+                
+                <router-route path="/users/:id/:jd">
+                    User JD
+                    <user-profile></user-profile>
                 </router-route>
 
                 <!-- This is a catch all route -->
