@@ -10,3 +10,4 @@ import './router-link/component.js';
 // import './router-route/component.js';
 import './router-switch/component.js';
 import './user-profile/component.js';
+import './simple-clock/component.js';

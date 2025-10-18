@@ -7,6 +7,8 @@ import localStyles from './style.css' with { type: 'css' };
 
 class CounterControl extends StatefulElement {
 
+    intervalID = null;
+
 	getTemplatePath() {
         return new URL('markup.html', import.meta.url).pathname;
 	}
@@ -25,7 +27,18 @@ class CounterControl extends StatefulElement {
     }
 
     onUnmount() {
+        // clearInterval(this.intervalID);
         this.resetState('counter');
+    }
+
+    async onMount() {
+        // const response = await fetch('/api/data');
+        // const data = await response.json();
+        // this.setState('myStore', { items: data });
+
+        // this.intervalID = setInterval(() => {
+        //     this.increment();
+        // }, 1000)
     }
 
 }

@@ -65,7 +65,8 @@ export class StatefulElement extends HTMLElement {
 
     /**
      * Lifecycle method called when the component is added to the DOM.
-     * Handles template loading, DSD hydration, and store subscriptions.
+     * Handles template loading, DSD hydration, store subscriptions,
+     * the initial render, and the onMount hook.
      * @returns {Promise<void>}
      */
     async connectedCallback() {
@@ -98,7 +99,27 @@ export class StatefulElement extends HTMLElement {
             this._stores[key].subscribe(this._renderCallback);
         }
 
+        // Perform the initial render
         this.render();
+
+        // Call the user-defined mount hook after everything is ready.
+        this.onMount();
+    }
+
+    /**
+     * @abstract
+     * A lifecycle hook that subclasses can implement to run setup logic
+     * after the component is first connected and rendered to the DOM.
+     * Ideal for fetching data or setting up intervals.
+     * @example
+     * async onMount() {
+     * const response = await fetch('/api/data');
+     * const data = await response.json();
+     * this.setState('myStore', { items: data });
+     * }
+     */
+    onMount() {
+        // This method is intended to be overridden by subclasses.
     }
 
     /**
@@ -167,10 +188,26 @@ export class StatefulElement extends HTMLElement {
         const templateString = this.template || this.view() || '';
 
         const staticData = this.initialData();
-        const context = { ...staticData, ...this.state };
+        const context = this.deepMergeObjects(staticData, this.state);
 
         const finalHtml = renderer(templateString, context);
         this.html([finalHtml]);
+    }
+
+    deepMergeObjects(obj1, obj2) {
+        const result = { ...obj1 };
+
+        for (let key in obj2) {
+            if (obj2.hasOwnProperty(key)) {
+                if (obj2[key] instanceof Object && obj1[key] instanceof Object) {
+                    result[key] = this.deepMergeObjects(obj1[key], obj2[key]);
+                } else {
+                    result[key] = obj2[key];
+                }
+            }
+        }
+
+        return result;
     }
 
     /**
