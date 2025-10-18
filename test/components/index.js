@@ -9,3 +9,4 @@ import './router-container/component.js';
 import './router-link/component.js';
 import './router-route/component.js';
 import './router-switch/component.js';
+import './user-profile/component.js';

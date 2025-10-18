@@ -4,7 +4,7 @@ import { routerStore } from '../../stores/routerStore.js';
 class RouterSwitch extends StatefulElement {
     constructor() {
         super();
-        // FIX: Ensure the switch itself is a block container so it can host
+        // Ensure the switch itself is a block container so it can host
         // the visible block-level route components.
         this.style.display = 'block';
     }
@@ -41,24 +41,34 @@ class RouterSwitch extends StatefulElement {
 
             if (match && !hasMatch) {
                 hasMatch = true;
-                child.style.display = 'block';
+                // Activate the matching route
+                if (typeof child.activate === 'function') {
+                    child.activate();
+                }
                 const currentParams = JSON.stringify(this.state.router.params);
                 const newParams = JSON.stringify(match.params);
                 if (currentParams !== newParams) {
                     routerStore.setState({ params: match.params });
                 }
             } else {
-                child.style.display = 'none';
+                // Deactivate all other routes
+                if (typeof child.deactivate === 'function') {
+                    child.deactivate();
+                }
             }
         }
 
+        // Handle the catch-all route
         if (catchAllRoute) {
-            catchAllRoute.style.display = hasMatch ? 'none' : 'block';
+            if (!hasMatch && typeof catchAllRoute.activate === 'function') {
+                catchAllRoute.activate();
+            } else if (hasMatch && typeof catchAllRoute.deactivate === 'function') {
+                catchAllRoute.deactivate();
+            }
         }
 
-        this.html([
-            `<slot></slot>`
-        ]);
+        // This ensures the children are always available in the DOM
+        this.html([`<slot></slot>`]);
     }
 
     /**
@@ -92,8 +102,7 @@ class RouterSwitch extends StatefulElement {
         
         return { path: match[0], params };
     }
-
-    view() { return `<slot></slot>`; }
 }
 
 customElements.define('router-switch', RouterSwitch);
+
