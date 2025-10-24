@@ -5,58 +5,85 @@ import { BASE_PATH } from '../../router-config.js'
 class RouterStore extends StateStore {
     constructor() {
         super({ pathname: null, params: {} });
-        this._routes = []; // A registry for all route paths
+        this._routes = new Set(); // Use a Set to avoid duplicate route paths
         window.addEventListener('popstate', this._onURLChange.bind(this));
     }
 
     /**
-     * Called by the <router-switch> to register all available route paths.
-     * @param {string[]} routes - An array of path strings (e.g., ['/', '/about', '/users/:id']).
+     * Called by <router-switch> components to register their available route paths.
+     * @param {string[]} routes - An array of path strings.
      */
     registerRoutes(routes) {
-        this._routes = routes;
-        // Perform an initial URL check now that we know the routes
-        this._onURLChange();
+        let hasNewRoutes = false;
+        routes.forEach(route => {
+            // Check if this is a route we haven't seen before.
+            if (!this._routes.has(route)) {
+                this._routes.add(route);
+                hasNewRoutes = true;
+            }
+        });
+
+        // FIX: Re-evaluate the URL if our knowledge of the application's routes has changed.
+        // This is crucial for nested routes which register themselves after the initial page load.
+        // This check also prevents infinite loops, as re-registering the same routes will not trigger a state change.
+        if (hasNewRoutes) {
+            this._onURLChange();
+        }
     }
 
     _onURLChange() {
         const currentPath = this._getRelativePath();
-        let params = {};
-        
-        // Find the matching route and extract its params
+        let bestMatch = null;
+
+        // Find all matching routes and determine the most specific one.
         for (const routePath of this._routes) {
             const match = this._matchPath(routePath, currentPath);
             if (match) {
-                params = match.params;
-                break;
+                // A longer matched path is considered more specific.
+                if (!bestMatch || match.path.length > bestMatch.path.length) {
+                    bestMatch = match;
+                }
             }
         }
         
-        // Set the full state, including the calculated params
+        const params = bestMatch ? bestMatch.params : {};
         this.setState({ pathname: currentPath, params });
     }
 
     _getRelativePath() {
         const path = window.location.pathname;
         if (path.startsWith(BASE_PATH)) {
-            return '/' + path.substring(BASE_PATH.length);
+            // Ensure leading slash is present, but not duplicated
+            return '/' + path.substring(BASE_PATH.length).replace(/^\/+/, '');
         }
         return path;
     }
 
     _matchPath(routePath, currentPath) {
+        let isPrefixMatch = false;
+        let pathPattern = String(routePath || '');
+        
+        if (pathPattern.endsWith('/*')) {
+            isPrefixMatch = true;
+            pathPattern = pathPattern.slice(0, -2);
+        }
+
         const paramNames = [];
-        const regexPath = String(routePath || '').replace(/:(\w+)/g, (_, name) => {
+        const regexPath = pathPattern.replace(/:(\w+)/g, (_, name) => {
             paramNames.push(name);
             return '([^\\/]+)';
         });
-        const regex = new RegExp(`^${regexPath}$`);
+
+        const regex = new RegExp(`^${regexPath}${isPrefixMatch ? '' : '$'}`);
         const match = String(currentPath || '').match(regex);
+
         if (!match) return null;
+
         const params = paramNames.reduce((acc, name, index) => {
             acc[name] = match[index + 1];
             return acc;
         }, {});
+        
         return { path: match[0], params };
     }
 }
@@ -68,4 +95,3 @@ export function navigate(to) {
     window.history.pushState({}, '', fullPath);
     routerStore._onURLChange();
 }
-

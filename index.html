@@ -6,13 +6,9 @@
     <meta name="viewport" content="width=, initial-scale=1.0">
     <title>Document</title>
     <base href="/experiments/wc-test/">
-    <script src="./test/custom-renderer/handlebars/handlebars.min.4.7.8.js" defer></script>
-    <!-- <script type="module" src="./test/components/user-greeting/component.js" defer></script>
-    <script type="module" src="./test/components/counter-display/component.js" defer></script>
-    <script type="module" src="./test/components/counter-control/component.js" defer></script>
-    <script type="module" src="./test/components/guest-control/component.js" defer></script> -->
-    <script type="module" src="./test/components/index.js" defer></script>
-    <!-- <link rel="stylesheet" href="./test/minireset.min.css"> -->
+    <!-- <link rel="modulepreload" href="./test/components/index.js" /> -->
+    <script src="./test/custom-renderer/handlebars/handlebars.min.4.7.8.js"></script>
+    <script type="module" src="./test/components/index.js"></script>
     <link rel="stylesheet" href="./test/styles.css">
 </head>
 
@@ -21,40 +17,20 @@
     <router-container>
         <header class="navigation">
             <nav>
-                <router-link to="/">Home</router-link> |
-                <router-link to="/about">About</router-link> |
-                <router-link to="/users/jane">Jane's Profile</router-link> |
-                <router-link to="/users/john">John's Profile</router-link> |
-                <router-link to="/users/john/doe">John's Sub Profile</router-link>
+                <router-link to="/">Home</router-link>
+                <router-link to="/about">About</router-link>
+                <router-link to="/users">Users</router-link>
+                <router-link to="/thing">Thing</router-link>
             </nav>
         </header>
 
         <main>
             <router-switch>
-                <router-route path="/">
-                    <h2>Home Page</h2>
-                    <p>Welcome to the main page!</p>
-                    <simple-clock></simple-clock>
-                </router-route>
+                <router-route path="/" src="./test/pages/home-page.html"></router-route>
+                <router-route path="/about" src="./test/pages/about-page.html"></router-route>
+                <router-route path="/users/*" src="./test/pages/users-page.html"></router-route>
 
-                <router-route path="/about" src="./about-page.html"></router-route>
-
-                <!-- This is a dynamic route -->
-                <router-route path="/users/:id">
-                    User ID
-                    <user-profile></user-profile>
-                </router-route>
-
-                
-                <router-route path="/users/:id/:jd">
-                    User JD
-                    <user-profile></user-profile>
-                </router-route>
-
-                <!-- This is a catch all route -->
-                <!-- <router-route path="*">
-                    404
-                </router-route> -->
+                <router-route path="/*">404</router-route>
             </router-switch>
         </main>
     </router-container>

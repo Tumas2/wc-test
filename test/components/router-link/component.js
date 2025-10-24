@@ -21,9 +21,8 @@ class RouterLink extends StatefulElement {
         const to = this.getAttribute('to') || '#';
         // Construct the full href for accessibility and "open in new tab"
         const fullHref = (BASE_PATH + to).replace(/\/\//g, '/');
-        console.log({BASE_PATH, to, fullHref})
         return `
-            <a href="${fullHref}"><slot></slot></a>
+            <a part="link" href="${fullHref}"><slot></slot></a>
         `;
     }
 }

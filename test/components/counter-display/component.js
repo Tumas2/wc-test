@@ -15,7 +15,7 @@ class CounterDisplay extends StatefulElement {
       	<style> 
 			h2 { 
 				font-family: sans-serif;
-				color: steelblue; 
+				color: #FFC107; 
 				font-size: calc(1rem * calc(1 + calc({{counter.count}} / 10)));
 			} 
 		</style>

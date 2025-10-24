@@ -1,4 +1,55 @@
+:root {
+    --max-content-width: 640px;
+    --link-color: #2196F3;
+}
+
+/* 
+    Web-Components CSS inheritance:
+    Styles that are inheritable in standard CSS, such as: 
+    font-family, color, line-height, text-align, and font-size 
+    are designed to propagate down the DOM tree.
+*/
+
 * {
-    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-    color: #222;   
+    font-family: 'Franklin Gothic', 'Arial Narrow', Arial, sans-serif;
+    color: #fff;
+}
+
+a,
+router-link::part(link) {
+    color: var(--link-color);
+
+    &:visited {
+        color: var(--link-color);
+    }
+
+    &:hover {}
+
+}
+
+body {
+    background-color: #222;
+}
+
+
+.navigation {
+    max-width: var(--max-content-width);
+    margin: 0 auto;
+    font-size: 1rem;
+
+    nav {
+        display: flex;
+        gap: 1em;
+
+        router-link {}
+    }
+}
+
+main {
+    max-width: var(--max-content-width);
+    margin: 0 auto;
+}
+
+.red {
+    background-color: red;
 }
