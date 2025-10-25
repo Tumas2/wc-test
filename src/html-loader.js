@@ -1,8 +1,8 @@
 // html-loader.js
 const templateCache = new Map();
 
-export function loadHTML(path) {
-	if (templateCache.has(path)) {
+export function loadHTML(path, cache = true) {
+	if (cache && templateCache.has(path)) {
 		return templateCache.get(path);
 	}
 
@@ -14,6 +14,8 @@ export function loadHTML(path) {
 			return response.text();
 		});
 
-	templateCache.set(path, promise);
+	if (cache) {
+		templateCache.set(path, promise);
+	}
 	return promise;
 }

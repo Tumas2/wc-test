@@ -1,5 +1,6 @@
 // user-greeting.js
 import { HandlebarsStatefulElement } from '../../custom-renderer/handlebars/HandlebarsStatefulElement.js';
+// import { StatefulElement } from '../../../src/StatefulElement.js';
 import { userStore } from '../../stores/userStore.js';
 
 import componentStyle from './style.css' with { type: 'css' }

@@ -64,8 +64,9 @@ class RouterSwitch extends StatefulElement {
         let finalHtml = '';
         if (routeToRender) {
             const src = routeToRender.getAttribute('src');
+            const noCache = routeToRender.hasAttribute('no-cache');
             if (src) {
-                finalHtml = await loadHTML(src);
+                finalHtml = await loadHTML(src, !noCache);
             } else {
                 finalHtml = routeToRender.innerHTML;
             }

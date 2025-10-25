@@ -13,7 +13,11 @@
 </head>
 
 <body>
-
+<?php
+    // print('<pre>');
+    // print_r($_SERVER);
+    // print('</pre>');
+?>
     <router-container>
         <header class="navigation">
             <nav>
@@ -26,11 +30,23 @@
 
         <main>
             <router-switch>
-                <router-route path="/" src="./test/pages/home-page.html"></router-route>
+                <router-route path="/" src="./test/pages/home-page.html">
+                    <?php
+                        if( $_SERVER['REQUEST_URI'] === '/experiments/wc-test/' ){
+                            echo file_get_contents(__DIR__ . '/test/pages/home-page.html');
+                        }
+                    ?>
+                </router-route>
                 <router-route path="/about" src="./test/pages/about-page.html"></router-route>
-                <router-route path="/users/*" src="./test/pages/users-page.html"></router-route>
+                <router-route path="/users/*" src="./test/pages/users-page.html" no-cache>
+                    <?php
+                        if( $_SERVER['REQUEST_URI'] === '/experiments/wc-test/users' ){
+                            echo file_get_contents(__DIR__ . '/test/pages/users-page.html');
+                        }
+                    ?>
+                </router-route>
 
-                <router-route path="/*">404</router-route>
+                <router-route path="/*" src="./test/pages/404.html"></router-route>
             </router-switch>
         </main>
     </router-container>
