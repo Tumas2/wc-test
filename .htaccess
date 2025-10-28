@@ -2,24 +2,13 @@ DirectoryIndex index.php index.html
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /experiments/wc-test/
+  # Set the base path for your application
+  RewriteBase /wc-test/
 
-  # Don't rewrite direct requests for index.php or index.html
   RewriteRule ^index\.(php|html)$ - [L]
 
-  # --- Check for index.php ---
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  # Check if index.php exists in your base path
-  RewriteCond %{DOCUMENT_ROOT}/experiments/wc-test/index.php -f
-  # Rewrite to index.php
-  RewriteRule . /experiments/wc-test/index.php [L]
-
-  # --- Fallback to index.html ---
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
-  # Check if index.html exists in your base path
-  RewriteCond %{DOCUMENT_ROOT}/experiments/wc-test/index.html -f
-  # Rewrite to index.html
-  RewriteRule . /experiments/wc-test/index.html [L]
+  # Redirect all other requests to your index.html
+  RewriteRule . /wc-test/index.php [L]
 </IfModule>

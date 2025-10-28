@@ -1,4 +1,4 @@
-// store.js
+"use strict";
 
 export class StateStore {
     /**

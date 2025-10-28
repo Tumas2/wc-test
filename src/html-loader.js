@@ -1,4 +1,5 @@
-// html-loader.js
+"use strict";
+
 const templateCache = new Map();
 
 export function loadHTML(path, cache = true) {

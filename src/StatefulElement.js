@@ -1,3 +1,5 @@
+"use strict";
+
 import { loadHTML } from './html-loader.js';
 
 /**

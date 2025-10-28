@@ -1,11 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+<?php
+$base_url = '/wc-test';
+?>
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <base href="/experiments/wc-test/">
+    <base href="<?= $base_url; ?>/">
+
+    <script type="importmap">
+        {
+            "imports": {
+                "swc": "./src/index.js",
+                "stores/": "./test/stores/"
+            }
+        }
+    </script>
+
     <!-- <link rel="modulepreload" href="./test/components/index.js" /> -->
     <script src="./test/custom-renderer/handlebars/handlebars.min.4.7.8.js"></script>
     <script type="module" src="./test/components/index.js"></script>
@@ -13,11 +26,12 @@
 </head>
 
 <body>
-<?php
+    <?php
+    // echo "{$_SERVER['HTTP_HOST']} {$_SERVER['PHP_SELF']}";
     // print('<pre>');
     // print_r($_SERVER);
     // print('</pre>');
-?>
+    ?>
     <router-container>
         <header class="navigation">
             <nav>
@@ -32,17 +46,17 @@
             <router-switch>
                 <router-route path="/" src="./test/pages/home-page.html">
                     <?php
-                        if( $_SERVER['REQUEST_URI'] === '/experiments/wc-test/' ){
-                            echo file_get_contents(__DIR__ . '/test/pages/home-page.html');
-                        }
+                    if ($_SERVER['REQUEST_URI'] === "{$base_url}/") {
+                        echo file_get_contents(__DIR__ . '/test/pages/home-page.html');
+                    }
                     ?>
                 </router-route>
                 <router-route path="/about" src="./test/pages/about-page.html"></router-route>
                 <router-route path="/users/*" src="./test/pages/users-page.html" no-cache>
                     <?php
-                        if( $_SERVER['REQUEST_URI'] === '/experiments/wc-test/users' ){
-                            echo file_get_contents(__DIR__ . '/test/pages/users-page.html');
-                        }
+                    if ($_SERVER['REQUEST_URI'] === "{$base_url}/users") {
+                        echo file_get_contents(__DIR__ . '/test/pages/users-page.html');
+                    }
                     ?>
                 </router-route>
 

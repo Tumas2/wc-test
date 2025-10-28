@@ -4,4 +4,4 @@
  * Remember to include leading and trailing slashes.
  * Example: '/my-app/'
  */
-export const BASE_PATH = '/experiments/wc-test/';
+export const BASE_PATH = '/wc-test/';
