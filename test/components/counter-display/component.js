@@ -1,8 +1,8 @@
 // counter-display.js
-import { StatefulElement } from '../../../src/StatefulElement.js';
-import { counterStore } from '../../stores/counterStore.js';
+import { NanoRenderStatefulElement } from 'swc';
+import { counterStore } from 'stores/counterStore.js';
 
-class CounterDisplay extends StatefulElement {
+class CounterDisplay extends NanoRenderStatefulElement {
 
 	getStores() {
 		return {

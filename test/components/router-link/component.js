@@ -1,9 +1,9 @@
-import { StatefulElement } from '../../../src/StatefulElement.js';
-import { navigate } from '../../stores/routerStore.js';
+import { NanoRenderStatefulElement } from 'swc';
+import { navigate } from 'stores/routerStore.js';
 
 import { BASE_PATH } from '../../../router-config.js';
 
-class RouterLink extends StatefulElement {
+class RouterLink extends NanoRenderStatefulElement {
     constructor() {
         super();
         this.addEventListener('click', this.onClick);

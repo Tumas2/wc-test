@@ -1,10 +1,10 @@
-import { StatefulElement } from '../../../src/StatefulElement.js';
-import { userStore } from '../../stores/userStore.js';
+import { NanoRenderStatefulElement } from 'swc';
+import { userStore } from 'stores/userStore.js';
 
 import globalStyles from '../../global.css' with { type: 'css' };
 import localStyles from './style.css' with { type: 'css' };
 
-class GuestControl extends StatefulElement {
+class GuestControl extends NanoRenderStatefulElement {
 
 	getTemplatePath() {
         return new URL('markup.html', import.meta.url).pathname;

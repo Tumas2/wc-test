@@ -1,8 +1,8 @@
-import { StatefulElement } from '../../../src/StatefulElement.js';
+import { NanoRenderStatefulElement } from 'swc';
 
-import '../../stores/routerStore.js'; // Ensures the store is initialized
+import 'stores/routerStore.js'; // Ensures the store is initialized
 
-class RouterContainer extends StatefulElement {
+class RouterContainer extends NanoRenderStatefulElement {
     // This component is for initialization only and does not render content.
     view() {
         return `<slot></slot>`;

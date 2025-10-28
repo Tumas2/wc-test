@@ -1,11 +1,11 @@
 // counter-control.js
-import { StatefulElement } from '../../../src/StatefulElement.js';
+import { NanoRenderStatefulElement } from 'swc';
 import { counterStore } from '../../stores/counterStore.js';
 
 import globalStyles from '../../global.css' with { type: 'css' };
 import localStyles from './style.css' with { type: 'css' };
 
-class SimpleClock extends StatefulElement {
+class SimpleClock extends NanoRenderStatefulElement {
 
     intervalID = null;
 

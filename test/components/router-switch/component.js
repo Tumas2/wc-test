@@ -1,10 +1,10 @@
-import { StatefulElement } from '../../../src/StatefulElement.js';
+import { NanoRenderStatefulElement } from 'swc';
 import { routerStore } from '../../stores/routerStore.js';
 import { loadHTML } from '../../../src/html-loader.js';
 
 import globalStyles from '../../styles.css' with { type: 'css' };
 
-class RouterSwitch extends StatefulElement {
+class RouterSwitch extends NanoRenderStatefulElement {
     constructor() {
         super();
         this.style.display = 'block';

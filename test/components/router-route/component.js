@@ -1,8 +1,8 @@
-import { StatefulElement } from '../../../src/StatefulElement.js';
+import { NanoRenderStatefulElement } from 'swc';
 import { loadHTML } from '../../../src/html-loader.js';
 import { routerStore } from '../../stores/routerStore.js'; // Import the router store
 
-class RouterRoute extends StatefulElement {
+class RouterRoute extends NanoRenderStatefulElement {
     constructor() {
         super();
         this.style.display = 'none';
