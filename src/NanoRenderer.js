@@ -1,4 +1,4 @@
-import { StatefulElement } from "swc";
+import { StatefulElement } from "./StatefulElement.js";
 
 /**
  * A simplified, regex-based template renderer.

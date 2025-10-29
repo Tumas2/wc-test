@@ -1,0 +1,5 @@
+{
+    "router": {
+        "BASE_PATH": "/swc/test/php/"
+    }
+}

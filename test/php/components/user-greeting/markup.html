@@ -1,0 +1,23 @@
+<h1>Welcome back, <span>{{user.name}}</span></span>!</h1>
+<ul class="people_list">
+    {{#each user.people}}
+    <li>{{this}}</li>
+    {{/each}}
+</ul>
+
+{{#if user.isAdmin}}
+<p>You are an admin.</p>
+{{else}}
+<p>You are a regular person.</p>
+{{/if}}
+
+<p>Skills:</p>
+<ul>
+    {{#each user.skills}}
+    <li>{{this}}</li>
+    {{else}}
+    <li>You have no skills listed.</li>
+    {{/each}}
+</ul>
+
+<slot></slot>

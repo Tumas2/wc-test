@@ -107,14 +107,44 @@ export class StatefulElement extends HTMLElement {
 
     /**
      * The main render method. Passes template and data to the chosen renderer.
+     * It syncs state and performs a one-level-deep merge of initialData and state.
      */
     render() {
-        this._syncState();
+        this._syncState(); // Populates this.state
         const initialComponentData = this.initialData();
-        const context = { ...initialComponentData, ...this.state };
+
+        // Start with all properties from initialData
+        const context = { ...initialComponentData };
+
+        // Now, intelligently merge the state on top
+        for (const key in this.state) {
+            if (Object.prototype.hasOwnProperty.call(this.state, key)) {
+                const stateValue = this.state[key];
+                const initialValue = context[key];
+
+                // If both the state value and the initial value are plain objects,
+                // perform a one-level-deep merge.
+                if (
+                    typeof stateValue === 'object' && stateValue !== null && !Array.isArray(stateValue) &&
+                    typeof initialValue === 'object' && initialValue !== null && !Array.isArray(initialValue)
+                ) {
+                    context[key] = {
+                        ...initialValue, // Start with initial data's properties
+                        ...stateValue     // Override with state's properties
+                    };
+                } else {
+                    // Otherwise, just let the state value replace the initial value.
+                    context[key] = stateValue;
+                }
+            }
+        }
+
         const renderer = this.getRenderer();
         const templateString = this.template || this.view() || '';
+
+        // Pass the fully merged context to the renderer
         const finalHtml = renderer(templateString, context);
+
         this.html([finalHtml]);
     }
 
