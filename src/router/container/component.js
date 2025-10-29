@@ -1,5 +1,5 @@
 import { NanoRenderStatefulElement, StatefulElement } from 'swc';
-import { RouterStore } from '../../stores/routerStore.js'; 
+import { RouterStore } from '../store.js'; 
 
 /**
  * Provides a RouterStore instance to all descendant router components.
@@ -9,7 +9,7 @@ import { RouterStore } from '../../stores/routerStore.js';
  * <!-- all other router components -->
  * </router-container>
  */
-class RouterContainer extends StatefulElement {
+export class RouterContainer extends StatefulElement {
     constructor() {
         super();
         this.style.display = 'block';
@@ -33,5 +33,3 @@ class RouterContainer extends StatefulElement {
     // This component just renders its children
     view() { return `<slot></slot>`; }
 }
-
-customElements.define('router-container', RouterContainer);

@@ -1,7 +1,7 @@
 import { StatefulElement, NanoRenderStatefulElement } from 'swc';
 import { loadHTML } from '../../../src/html-loader.js';
 
-class RouterSwitch extends StatefulElement {
+export class RouterSwitch extends NanoRenderStatefulElement {
     constructor() {
         super();
         this.style.display = 'block';
@@ -10,18 +10,30 @@ class RouterSwitch extends StatefulElement {
     }
 
     connectedCallback() {
-        const container = this.closest('router-container');
-        if (!container || !container.store) {
-            throw new Error('<router-switch> must be placed inside a <router-container>.');
+        // 1. Try to find a container in the light DOM (for top-level switches)
+        let provider = this.closest('router-container');
+
+        // 2. If not found, we're a nested switch in a shadow DOM. Get the host.
+        if (!provider) {
+            const rootNode = this.getRootNode();
+            if (rootNode.host) {
+                // The host will be the parent <router-switch>
+                provider = rootNode.host;
+            }
         }
-        this.store = container.store;
+
+        // 3. Check the provider for the store.
+        if (!provider || !provider.store) {
+            throw new Error('<router-switch> must be placed inside a <router-container> or another <router-switch>.');
+        }
+        this.store = provider.store;
 
         // Register all child route paths with the central store
         const routes = Array.from(this.children)
             .filter(child => child.tagName === 'ROUTER-ROUTE')
             .map(child => child.getAttribute('path'));
         this.store.registerRoutes(routes);
-        
+
         super.connectedCallback();
     }
 
@@ -46,7 +58,7 @@ class RouterSwitch extends StatefulElement {
         // Find the first matching route
         for (const child of this.children) {
             if (child.tagName !== 'ROUTER-ROUTE') continue;
-            
+
             const routePath = child.getAttribute('path');
             if (routePath === '*') {
                 catchAllRoute = child;
@@ -61,20 +73,21 @@ class RouterSwitch extends StatefulElement {
                 break; // Found the first match
             }
         }
-        
+
         if (!routeToRender && catchAllRoute) {
             routeToRender = catchAllRoute;
             match = { params: {} }; // Reset params for catch-all
         }
-        
-        // Update the store with the params from the matched route
-        const currentParams = JSON.stringify(this.state.router.params);
-        const newParams = JSON.stringify(match ? match.params : {});
-        if (currentParams !== newParams && this.store) {
-            // Note: We only set params. The pathname is already set by the store.
-            this.store.setState({ params: match ? match.params : {} });
-        }
-        
+
+        // --- THIS ENTIRE BLOCK HAS BEEN REMOVED TO PREVENT THE INFINITE LOOP ---
+        // The router-store is now the single source of truth for params.
+        // const currentParams = JSON.stringify(this.state.router.params);
+        // const newParams = JSON.stringify(match ? match.params : {});
+        // if (currentParams !== newParams && this.store) {
+        //     this.store.setState({ params: match ? match.params : {} });
+        // }
+        // --- END OF REMOVED BLOCK ---
+
         let finalHtml = '';
         if (routeToRender) {
             const src = routeToRender.getAttribute('src');
@@ -91,6 +104,4 @@ class RouterSwitch extends StatefulElement {
         this.html([renderer(finalHtml, context)]);
     }
 }
-
-customElements.define('router-switch', RouterSwitch);
 

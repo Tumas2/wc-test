@@ -1,4 +1,4 @@
-import { StateStore } from "../../src/store.js";
+import { StateStore } from "swc";
 
 // const date = new Date();
 export const counterStore = new StateStore({ 

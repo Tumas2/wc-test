@@ -7,8 +7,3 @@ import './counter-display/component.js';
 import './main-nav/component.js';
 import './simple-clock/component.js';
 import './user-profile/component.js';
-
-import './router-container/component.js';
-import './router-switch/component.js';
-import './router-link/component.js';
-// import './router-route/component.js';

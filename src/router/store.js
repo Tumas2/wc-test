@@ -1,4 +1,4 @@
-import { StateStore } from "../../src/store.js";
+import { StateStore } from "../store.js";
 
 /**
  * A state store for managing the application's routing state.

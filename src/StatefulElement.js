@@ -329,4 +329,50 @@ export class StatefulElement extends HTMLElement {
         }
         return element;
     }
+
+    /**
+     * @protected
+     * Recursively traverses up the DOM, crossing shadow boundaries,
+     * to find the first ancestor that satisfies a predicate function.
+     * @param {(el: HTMLElement) => boolean} predicate A function that returns true for the element we're looking for.
+     * @param {HTMLElement} [element=this] The element to start the search from. Defaults to `this`.
+     * @returns {HTMLElement | null} The matching element, or null.
+     */
+    _findClosestElement(predicate, element = this) {
+        if (!element) {
+            return null;
+        }
+
+        // 1. Check if the element itself matches the condition
+        if (predicate(element)) {
+            return element;
+        }
+
+        // 2. Check the host of the shadow root, if we're in one
+        const rootNode = element.getRootNode();
+        if (rootNode instanceof ShadowRoot) {
+            const host = rootNode.host;
+            if (host) {
+                // Recursively start the search from the host
+                return this._findClosestElement(predicate, host);
+            }
+        }
+
+        // 3. If in light DOM, go up to the parent element
+        if (element.parentElement) {
+            return this._findClosestElement(predicate, element.parentElement);
+        }
+
+        // 4. We've reached the top of the document without finding a provider
+        return null;
+    }
+
+    /**
+     * @protected
+     * A specific helper that uses _findClosestElement to find a store provider.
+     * @returns {HTMLElement | null} The component with the store, or null.
+     */
+    _findStoreProvider() {
+        return this._findClosestElement((el) => !!el.store);
+    }
 }

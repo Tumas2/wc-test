@@ -16,7 +16,7 @@
 }
 
 a,
-router-link::part(link) {
+::part(link) {
     color: var(--link-color);
 
     &:visited {

@@ -10,8 +10,10 @@ export class NanoRenderer {
     // Regex patterns are defined as static properties for clarity and potential overriding.
     static REGEX_EACH = /{{\s*#each\s+([a-zA-Z0-9_.]+)\s*}}(.*?)(?:{{\s*else\s*}}(.*?))?{{\s*\/each\s*}}/gs;
     static REGEX_IF = /{{\s*#if\s+([a-zA-Z0-9_.]+)\s*}}(.*?)(?:{{\s*else\s*}}(.*?))?{{\s*\/if\s*}}/gs;
-    static REGEX_UNESCAPED = /{{\s*{\s*([a-zA-Z0-9_.]+)\s*}\s*}}/g;
-    static REGEX_ESCAPED = /{{\s*([a-zA-Z0-9_.]+)\s*}}/g;
+    
+    // Updated regex to optionally capture a fallback value: || 'fallback' or || "fallback"
+    static REGEX_UNESCAPED = /{{\s*{\s*([a-zA-Z0-9_.]+)\s*(?:\|\|\s*(['"])(.*?)\2)?\s*}\s*}}/g;
+    static REGEX_ESCAPED = /{{\s*([a-zA-Z0-9_.]+)\s*(?:\|\|\s*(['"])(.*?)\2)?\s*}}/g;
 
     constructor() {
         this.maxIterations = 100; // Safety break to prevent infinite loops
@@ -26,38 +28,40 @@ export class NanoRenderer {
      * Safely gets a nested property from an object using a dot-notation string.
      * @param {object} context - The data object to search.
      * @param {string} path - The dot-notation path (e.g., "user.name").
-     * @returns {*} The value, or an empty string if not found.
+     * @returns {*} The value, or null if not found (distinguishing from empty string).
      */
     #getValue(context, path) {
         if (path === 'this' && (typeof context !== 'object' || context === null)) {
+            // Handle 'this' for primitive values in an #each loop
             return context;
         }
-
+        
         let current = context;
         const parts = path.split('.');
-
+        
         try {
             for (const part of parts) {
                 if (current === null || typeof current === 'undefined') {
-                    return '';
+                    return null; // Use null to indicate "not found"
                 }
                 current = current[part];
             }
-            // Handle null/undefined values gracefully
-            return current === null || typeof current === 'undefined' ? '' : current;
+            // Return the value, even if it's null, undefined, 0, false, or ''
+            return current;
         } catch (e) {
-            return '';
+            return null; // Return null on error
         }
     }
 
     /**
      * Escapes HTML special characters for safe rendering.
-     * @param {string} str - The string to escape.
+     * @param {*} str - The value to escape (will be converted to string).
      * @returns {string} The escaped string.
      */
     #escapeHTML(str) {
-        if (typeof str !== 'string') str = String(str);
-        return str.replace(/[&<>"']/g, function (match) {
+        // Coerce to string, handling null/undefined
+        const stringValue = String(str ?? '');
+        return stringValue.replace(/[&<>"']/g, function(match) {
             return {
                 '&': '&amp;',
                 '<': '&lt;',
@@ -75,6 +79,9 @@ export class NanoRenderer {
      * @returns {string} The rendered HTML string.
      */
     render(template, data) {
+        if (typeof template !== 'string') {
+            return '';
+        }
         let output = template;
         let iterations = 0;
         let lastOutput = '';
@@ -83,7 +90,7 @@ export class NanoRenderer {
         while (output !== lastOutput && iterations < this.maxIterations) {
             lastOutput = output;
             iterations++;
-
+            
             // 1. Process {{#each}} blocks (with {{else}})
             output = output.replace(NanoRenderer.REGEX_EACH, (match, arrayName, eachContent, elseContent) => {
                 const array = this.#getValue(data, arrayName);
@@ -103,7 +110,7 @@ export class NanoRenderer {
             output = output.replace(NanoRenderer.REGEX_IF, (match, conditionName, ifContent, elseContent) => {
                 const value = this.#getValue(data, conditionName);
                 let isTruthy = false;
-
+                
                 // Check for "truthiness" (not false, null, undefined, 0, "", or empty array)
                 if (Array.isArray(value)) {
                     isTruthy = value.length > 0;
@@ -120,22 +127,38 @@ export class NanoRenderer {
                 return ''; // No match and no else block
             });
         }
-
+        
         if (iterations === this.maxIterations) {
             console.error("Renderer reached max iterations. Possible infinite loop.");
             return "<p style='color:red;'>Error: Renderer timed out. Check for malformed blocks.</p>";
         }
 
-        // 3. Process Unescaped (raw) variables: {{{variable}}}
-        // This must be done *before* escaped variables.
-        output = output.replace(NanoRenderer.REGEX_UNESCAPED, (match, path) => {
-            return this.#getValue(data, path);
+        // 3. Process Unescaped (raw) variables: {{{variable || "fallback"}}}
+        output = output.replace(NanoRenderer.REGEX_UNESCAPED, (match, path, quote, fallback) => {
+            const value = this.#getValue(data, path);
+            // Use value if it's not null or undefined
+            if (value !== null && value !== undefined) {
+                return value;
+            }
+            // Otherwise, use fallback if it exists
+            if (fallback !== undefined) {
+                return fallback;
+            }
+            return ''; // Default to empty string
         });
 
-        // 4. Process Escaped variables: {{variable}} or {{this}}
-        output = output.replace(NanoRenderer.REGEX_ESCAPED, (match, path) => {
+        // 4. Process Escaped variables: {{variable || "fallback"}}
+        output = output.replace(NanoRenderer.REGEX_ESCAPED, (match, path, quote, fallback) => {
             const value = this.#getValue(data, path);
-            return this.#escapeHTML(value);
+            // Use value if it's not null or undefined
+            if (value !== null && value !== undefined) {
+                return this.#escapeHTML(value);
+            }
+            // Otherwise, use fallback if it exists
+            if (fallback !== undefined) {
+                return this.#escapeHTML(fallback);
+            }
+            return ''; // Default to empty string
         });
 
         return output;

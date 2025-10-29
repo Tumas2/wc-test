@@ -1,4 +1,4 @@
-import { StateStore } from "../../src/store.js";
+import { StateStore } from "swc";
 
 export const userStore = new StateStore({ 
     name: 'Guest', 
