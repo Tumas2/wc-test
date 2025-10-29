@@ -1,32 +1,33 @@
-import { NanoRenderStatefulElement } from 'swc';
-import { routerStore } from '../../stores/routerStore.js';
+import { StatefulElement, NanoRenderStatefulElement } from 'swc';
 import { loadHTML } from '../../../src/html-loader.js';
 
-import globalStyles from '../../styles.css' with { type: 'css' };
-
-class RouterSwitch extends NanoRenderStatefulElement {
+class RouterSwitch extends StatefulElement {
     constructor() {
         super();
         this.style.display = 'block';
-    }
-
-    getStyles() {
-        return [
-            globalStyles, 
-        ];
+        /** @type {import('./router-store.js').RouterStore} */
+        this.store = null;
     }
 
     connectedCallback() {
+        const container = this.closest('router-container');
+        if (!container || !container.store) {
+            throw new Error('<router-switch> must be placed inside a <router-container>.');
+        }
+        this.store = container.store;
+
+        // Register all child route paths with the central store
         const routes = Array.from(this.children)
             .filter(child => child.tagName === 'ROUTER-ROUTE')
             .map(child => child.getAttribute('path'));
-        routerStore.registerRoutes(routes);
-
+        this.store.registerRoutes(routes);
+        
         super.connectedCallback();
     }
 
     getStores() {
-        return { router: routerStore };
+        // Provide the discovered store to the base class
+        return { router: this.store };
     }
 
     async render() {
@@ -40,27 +41,40 @@ class RouterSwitch extends NanoRenderStatefulElement {
 
         let routeToRender = null;
         let catchAllRoute = null;
+        let match = null;
 
+        // Find the first matching route
         for (const child of this.children) {
             if (child.tagName !== 'ROUTER-ROUTE') continue;
-
+            
             const routePath = child.getAttribute('path');
             if (routePath === '*') {
                 catchAllRoute = child;
                 continue;
             }
 
-            const match = this.matchPath(routePath, currentPath);
-            if (match) {
+            // Use the store's own matching logic
+            const routeMatch = this.store._matchPath(routePath, currentPath);
+            if (routeMatch) {
+                match = routeMatch;
                 routeToRender = child;
-                break; // We only render the first match
+                break; // Found the first match
             }
         }
-
-        if (!routeToRender) {
+        
+        if (!routeToRender && catchAllRoute) {
             routeToRender = catchAllRoute;
+            match = { params: {} }; // Reset params for catch-all
         }
-
+        
+        // Update the store with the params from the matched route
+        const currentParams = JSON.stringify(this.state.router.params);
+        const newParams = JSON.stringify(match ? match.params : {});
+        if (currentParams !== newParams && this.store) {
+            // Note: We only set params. The pathname is already set by the store.
+            this.store.setState({ params: match ? match.params : {} });
+        }
+        
         let finalHtml = '';
         if (routeToRender) {
             const src = routeToRender.getAttribute('src');
@@ -75,40 +89,6 @@ class RouterSwitch extends NanoRenderStatefulElement {
         const renderer = this.getRenderer();
         const context = { ...this.initialData(), ...this.state };
         this.html([renderer(finalHtml, context)]);
-    }
-
-    /**
-     * Matches a route path against the current URL path.
-     * Now supports wildcard (*) for nested routes.
-     */
-    matchPath(routePath, currentPath) {
-        let isPrefixMatch = false;
-        let pathPattern = String(routePath || '');
-
-        // Handle wildcard for nested routes
-        if (pathPattern.endsWith('/*')) {
-            isPrefixMatch = true;
-            pathPattern = pathPattern.slice(0, -2); // Remove '/*'
-        }
-
-        const paramNames = [];
-        const regexPath = pathPattern.replace(/:(\w+)/g, (_, name) => {
-            paramNames.push(name);
-            return '([^\\/]+)';
-        });
-
-        // If it's a prefix match, don't anchor the regex to the end ($)
-        const regex = new RegExp(`^${regexPath}${isPrefixMatch ? '' : '$'}`);
-        const match = String(currentPath || '').match(regex);
-
-        if (!match) return null;
-
-        const params = paramNames.reduce((acc, name, index) => {
-            acc[name] = match[index + 1];
-            return acc;
-        }, {});
-
-        return { path: match[0], params };
     }
 }
 

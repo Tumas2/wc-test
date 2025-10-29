@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <?php
-$base_url = '/wc-test';
+$base_url = '/swc';
 ?>
 
 <head>
@@ -20,7 +20,7 @@ $base_url = '/wc-test';
     </script>
 
     <!-- <link rel="modulepreload" href="./test/components/index.js" /> -->
-    <script src="./test/custom-renderer/handlebars/handlebars.min.4.7.8.js"></script>
+    <!-- <script src="./test/custom-renderer/handlebars/handlebars.min.4.7.8.js"></script> -->
     <script type="module" src="./test/components/index.js"></script>
     <link rel="stylesheet" href="./test/styles.css">
 </head>
@@ -32,7 +32,7 @@ $base_url = '/wc-test';
     // print_r($_SERVER);
     // print('</pre>');
     ?>
-    <router-container>
+    <router-container base-path="/swc">
         <header class="navigation">
             <nav>
                 <router-link to="/">Home</router-link>

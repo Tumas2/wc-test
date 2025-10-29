@@ -1,10 +1,15 @@
 import { NanoRenderStatefulElement } from 'swc';
-import { routerStore } from '../../stores/routerStore.js';
 
 class UserProfile extends NanoRenderStatefulElement {
-    getStores() {
-        return { router: routerStore };
-    }
+    // getStores() {
+
+    //     const container = this.closest('router-container');
+    //     if (!container) {
+    //         throw new Error('Must be placed inside a <router-container>.');
+    //     }
+
+    //     return { router: container.store };
+    // }
 
     initialData(){
         return {

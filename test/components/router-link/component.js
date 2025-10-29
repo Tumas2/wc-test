@@ -1,29 +1,35 @@
-import { NanoRenderStatefulElement } from 'swc';
-import { navigate } from 'stores/routerStore.js';
+import { NanoRenderStatefulElement, StatefulElement } from 'swc';
 
-import { BASE_PATH } from '../../../router-config.js';
-
-class RouterLink extends NanoRenderStatefulElement {
+class RouterLink extends StatefulElement {
     constructor() {
         super();
+        /** @type {import('./router-store.js').RouterStore} */
+        this.store = null;
         this.addEventListener('click', this.onClick);
+    }
+
+    connectedCallback() {
+        const container = this.closest('router-container');
+        if (!container || !container.store) {
+            throw new Error('<router-link> must be placed inside a <router-container>.');
+        }
+        this.store = container.store;
+        super.connectedCallback();
     }
     
     onClick(event) {
         event.preventDefault();
         const to = this.getAttribute('to');
-        if (to) {
-            navigate(to);
+        if (to && this.store) {
+            this.store.navigate(to);
         }
     }
 
     view() {
         const to = this.getAttribute('to') || '#';
-        // Construct the full href for accessibility and "open in new tab"
-        const fullHref = (BASE_PATH + to).replace(/\/\//g, '/');
-        return `
-            <a part="link" href="${fullHref}"><slot></slot></a>
-        `;
+        // Get the base path from the store to build the correct href
+        const fullHref = (this.store?.basePath + to).replace(/\/\//g, '/');
+        return `<a href="${fullHref}"><slot></slot></a>`;
     }
 }
 

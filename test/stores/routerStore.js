@@ -1,11 +1,26 @@
 import { StateStore } from "../../src/store.js";
-import { BASE_PATH } from '../../router-config.js'
 
+/**
+ * A state store for managing the application's routing state.
+ * An instance of this is created by <router-container>.
+ */
+export class RouterStore extends StateStore {
+    /**
+     * @param {string} basePath The application's base path (e.g., "/my-app/").
+     */
+    constructor(basePath = '/') {
+        // Ensure basePath is clean, e.g., /my-app/
+        const cleanBasePath = ('/' + basePath.replace(/^\/|\/$/g, '') + '/').replace(/\/+/g, '/');
+        
+        super({
+            pathname: window.location.pathname.substring(cleanBasePath.length) || '/',
+            params: {}
+        });
+        
+        this.basePath = cleanBasePath;
+        this._routes = new Set();
+        this._isInitialized = false;
 
-class RouterStore extends StateStore {
-    constructor() {
-        super({ pathname: null, params: {} });
-        this._routes = new Set(); // Use a Set to avoid duplicate route paths
         window.addEventListener('popstate', this._onURLChange.bind(this));
     }
 
@@ -16,30 +31,28 @@ class RouterStore extends StateStore {
     registerRoutes(routes) {
         let hasNewRoutes = false;
         routes.forEach(route => {
-            // Check if this is a route we haven't seen before.
             if (!this._routes.has(route)) {
                 this._routes.add(route);
                 hasNewRoutes = true;
             }
         });
 
-        // FIX: Re-evaluate the URL if our knowledge of the application's routes has changed.
-        // This is crucial for nested routes which register themselves after the initial page load.
-        // This check also prevents infinite loops, as re-registering the same routes will not trigger a state change.
         if (hasNewRoutes) {
             this._onURLChange();
         }
     }
 
+    /**
+     * @private
+     * Handles browser back/forward navigation.
+     */
     _onURLChange() {
         const currentPath = this._getRelativePath();
         let bestMatch = null;
 
-        // Find all matching routes and determine the most specific one.
         for (const routePath of this._routes) {
             const match = this._matchPath(routePath, currentPath);
             if (match) {
-                // A longer matched path is considered more specific.
                 if (!bestMatch || match.path.length > bestMatch.path.length) {
                     bestMatch = match;
                 }
@@ -50,15 +63,37 @@ class RouterStore extends StateStore {
         this.setState({ pathname: currentPath, params });
     }
 
+    /**
+     * @private
+     * Gets the current URL path relative to the base path.
+     * @returns {string} The relative path.
+     */
     _getRelativePath() {
         const path = window.location.pathname;
-        if (path.startsWith(BASE_PATH)) {
-            // Ensure leading slash is present, but not duplicated
-            return '/' + path.substring(BASE_PATH.length).replace(/^\/+/, '');
+        if (path.startsWith(this.basePath)) {
+            return '/' + path.substring(this.basePath.length).replace(/^\/+/, '');
         }
+        // Fallback for paths that don't match base, like root '/'
         return path;
     }
 
+    /**
+     * Navigates to a new relative path and updates the browser history.
+     * @param {string} to - The relative path (e.g., "/users/jane").
+     */
+    navigate(to) {
+        const fullPath = (this.basePath + to).replace(/\/\//g, '/');
+        window.history.pushState({}, '', fullPath);
+        this._onURLChange();
+    }
+
+    /**
+     * @private
+     * Matches a route path against the current URL path.
+     * @param {string} routePath The path pattern.
+     * @param {string} currentPath The current URL path.
+     * @returns {object|null} A match object with params, or null.
+     */
     _matchPath(routePath, currentPath) {
         let isPrefixMatch = false;
         let pathPattern = String(routePath || '');
@@ -86,12 +121,4 @@ class RouterStore extends StateStore {
         
         return { path: match[0], params };
     }
-}
-
-export const routerStore = new RouterStore();
-
-export function navigate(to) {
-    const fullPath = (BASE_PATH + to).replace(/\/\//g, '/');
-    window.history.pushState({}, '', fullPath);
-    routerStore._onURLChange();
 }
