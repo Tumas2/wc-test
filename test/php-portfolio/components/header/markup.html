@@ -1,0 +1,15 @@
+<header class="navigation py-2">
+    <div class="flex gap-4 justify-between items-center max-w-content">
+        <div class="font-black text-4xl">
+            <router-link to="/">TK</router-link>
+        </div>
+
+        <nav>
+            {{#each links}}
+            <router-link class="text-2xl" to="{{this.to}}">{{this.name}}</router-link>
+            {{/each}}
+        </nav>
+
+        <div></div>
+    </div>
+</header>

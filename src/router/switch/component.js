@@ -79,15 +79,6 @@ export class RouterSwitch extends NanoRenderStatefulElement {
             match = { params: {} }; // Reset params for catch-all
         }
 
-        // --- THIS ENTIRE BLOCK HAS BEEN REMOVED TO PREVENT THE INFINITE LOOP ---
-        // The router-store is now the single source of truth for params.
-        // const currentParams = JSON.stringify(this.state.router.params);
-        // const newParams = JSON.stringify(match ? match.params : {});
-        // if (currentParams !== newParams && this.store) {
-        //     this.store.setState({ params: match ? match.params : {} });
-        // }
-        // --- END OF REMOVED BLOCK ---
-
         let finalHtml = '';
         if (routeToRender) {
             const src = routeToRender.getAttribute('src');
@@ -99,9 +90,15 @@ export class RouterSwitch extends NanoRenderStatefulElement {
             }
         }
 
-        const renderer = this.getRenderer();
-        const context = { ...this.initialData(), ...this.state };
-        this.html([renderer(finalHtml, context)]);
+        if (this.store.getLoading() && !finalHtml) {
+            // Do nothing if page is loading and we have no finalHtml yet.
+        } else {
+            this.store.setLoading(false)
+            const renderer = this.getRenderer();
+            const context = { ...this.initialData(), ...this.state };
+            this.html([renderer(finalHtml, context)]);
+        }
+
     }
 }
 

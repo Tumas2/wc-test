@@ -88,6 +88,7 @@ export class StatefulElement extends HTMLElement {
         if (store) {
             store.setState(newState);
         } else {
+            console.log(storeName)
             console.warn(`Store with name "${storeName}" not found.`);
         }
     }

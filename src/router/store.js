@@ -17,11 +17,20 @@ export class RouterStore extends StateStore {
             params: {}
         });
         
+        this._loading = false
         this.basePath = cleanBasePath;
         this._routes = new Set();
         this._isInitialized = false;
 
         window.addEventListener('popstate', this._onURLChange.bind(this));
+    }
+
+    getLoading() {
+        return this._loading
+    }
+
+    setLoading(loading) {
+        this._loading = loading;
     }
 
     /**
@@ -60,6 +69,7 @@ export class RouterStore extends StateStore {
         }
         
         const params = bestMatch ? bestMatch.params : {};
+        this.setLoading(true);
         this.setState({ pathname: currentPath, params });
     }
 

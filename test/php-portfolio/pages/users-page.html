@@ -1,0 +1,45 @@
+<div class="user-layout">
+    <header>
+        <h1>Users Section</h1>
+        <nav>
+            <router-link to="/users/jane">Jane</router-link> |
+            <router-link to="/users/john">John</router-link> |
+            <router-link to="/users/john/doe">John's Sub Profile</router-link>
+        </nav>
+    </header>
+    <main>
+        <!-- This nested switch will render the child routes -->
+        <router-switch>
+
+            <router-route path="/users">
+                <p>Please select a user from the links above.</p>
+            </router-route>
+
+            <router-route path="/users/:id">
+                <user-profile></user-profile>
+            </router-route>
+
+            <router-route path="/users/:id/*">
+                <user-profile>
+                    <!-- Server side rendering START: replaced when scripts load -->
+                    <h2>User Profile</h2>
+                    <p>Viewing profile for user: <strong>john</strong> <b>doe</b></p>
+                    <!-- Server side rendering END -->
+                </user-profile>
+                <header class="red">
+                    <h1>Section: {{router.params.id}}</h1>
+                    <nav>
+                        <router-link to="/users/john/doe">John's Sub Profile</router-link>
+                    </nav>
+                </header>
+                <router-switch>
+
+                    <router-route path="/users/:id/:jd">
+                        <h2>Section: {{router.params.jd}}</h2>
+                    </router-route>
+                </router-switch>
+            </router-route>
+
+        </router-switch>
+    </main>
+</div>

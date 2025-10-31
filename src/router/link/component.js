@@ -10,7 +10,7 @@ export class RouterLink extends StatefulElement {
 
     connectedCallback() {
         // 1. Try to find a container in the light DOM (for top-level links)
-        let provider = this.closest('router-container');
+        const provider = this._findStoreProvider();
 
         // 2. If not found, we're likely in a shadow DOM. Get the host element.
         if (!provider) {
@@ -25,7 +25,7 @@ export class RouterLink extends StatefulElement {
         if (!provider || !provider.store) {
             throw new Error('<router-link> must be placed inside a <router-container> or <router-switch>.');
         }
-
+        
         this.store = provider.store;
         super.connectedCallback();
     }
@@ -39,10 +39,12 @@ export class RouterLink extends StatefulElement {
     }
 
     view() {
+        let classNames = this.getAttribute('class')
+        classNames = classNames ? `class="${classNames}" ` : '';
         const to = this.getAttribute('to') || '#';
         // Get the base path from the store (which we are guaranteed to have by this point)
         const basePath = this.store ? this.store.basePath : '/';
         const fullHref = (basePath + to).replace(/\/\//g, '/');
-        return `<a part="link" href="${fullHref}"><slot></slot></a>`;
+        return `<a ${classNames}part="link" href="${fullHref}"><slot></slot></a>`;
     }
 }

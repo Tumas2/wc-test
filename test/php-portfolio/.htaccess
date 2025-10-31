@@ -1,0 +1,18 @@
+DirectoryIndex index.php index.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # Set the base path for your application
+  RewriteBase /swc/test/php-portfolio/
+
+  # Route all requests starting with 'api/' to api.php
+  # This rule must come before the general file/directory checks
+  RewriteRule ^api/(.*)$ api.php [L]
+
+  RewriteRule ^index\.(php|html)$ - [L]
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  # Redirect all other requests to your index.html
+  RewriteRule . /swc/test/php-portfolio/index.php [L]
+</IfModule>

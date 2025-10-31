@@ -31,9 +31,14 @@ export class NanoRenderer {
      * @returns {*} The value, or null if not found (distinguishing from empty string).
      */
     #getValue(context, path) {
+        // Handle 'this' for primitive values in an #each loop (e.g., {{#each stringArray}} {{this}} {{/each}})
         if (path === 'this' && (typeof context !== 'object' || context === null)) {
-            // Handle 'this' for primitive values in an #each loop
             return context;
+        }
+
+        // Handle 'this' when it refers to the object context
+        if (path === 'this' && context?.this !== undefined) {
+             return context.this;
         }
         
         let current = context;
@@ -44,7 +49,12 @@ export class NanoRenderer {
                 if (current === null || typeof current === 'undefined') {
                     return null; // Use null to indicate "not found"
                 }
-                current = current[part];
+                 // Handle 'this.property'
+                if (part === 'this' && context?.this !== undefined) {
+                    current = context.this;
+                } else {
+                    current = current[part];
+                }
             }
             // Return the value, even if it's null, undefined, 0, false, or ''
             return current;
@@ -96,8 +106,15 @@ export class NanoRenderer {
                 const array = this.#getValue(data, arrayName);
                 if (Array.isArray(array) && array.length > 0) {
                     return array.map(item => {
-                        // Recursively render the inner content for each item.
-                        return this.render(eachContent, item);
+                        // ** THE FIX IS HERE **
+                        // Create a new context by merging the parent 'data'
+                        // and adding the current 'item' as the 'this' property.
+                        const itemContext = {
+                            ...data, // Keep the parent context
+                            this: item // Add the current item as 'this'
+                        };
+                        // Recursively render the inner content with the new context.
+                        return this.render(eachContent, itemContext);
                     }).join('');
                 } else if (elseContent !== undefined) {
                     // If array is empty or not an array, render the else block if it exists
@@ -164,7 +181,6 @@ export class NanoRenderer {
         return output;
     }
 }
-
 
 export class NanoRenderStatefulElement extends StatefulElement {
     getRenderer() {
