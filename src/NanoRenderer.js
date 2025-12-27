@@ -10,7 +10,7 @@ export class NanoRenderer {
     // Regex patterns are defined as static properties for clarity and potential overriding.
     static REGEX_EACH = /{{\s*#each\s+([a-zA-Z0-9_.]+)\s*}}(.*?)(?:{{\s*else\s*}}(.*?))?{{\s*\/each\s*}}/gs;
     static REGEX_IF = /{{\s*#if\s+([a-zA-Z0-9_.]+)\s*}}(.*?)(?:{{\s*else\s*}}(.*?))?{{\s*\/if\s*}}/gs;
-    
+
     // Updated regex to optionally capture a fallback value: || 'fallback' or || "fallback"
     static REGEX_UNESCAPED = /{{\s*{\s*([a-zA-Z0-9_.]+)\s*(?:\|\|\s*(['"])(.*?)\2)?\s*}\s*}}/g;
     static REGEX_ESCAPED = /{{\s*([a-zA-Z0-9_.]+)\s*(?:\|\|\s*(['"])(.*?)\2)?\s*}}/g;
@@ -40,16 +40,16 @@ export class NanoRenderer {
         if (path === 'this' && context?.this !== undefined) {
             return context.this;
         }
-        
+
         let current = context;
         const parts = path.split('.');
-        
+
         try {
             for (const part of parts) {
                 if (current === null || typeof current === 'undefined') {
                     return null; // Use null to indicate "not found"
                 }
-                 // Handle 'this.property'
+                // Handle 'this.property'
                 if (part === 'this' && context?.this !== undefined) {
                     current = context.this;
                 } else {
@@ -105,7 +105,7 @@ export class NanoRenderer {
         while (output !== lastOutput && iterations < this.maxIterations) {
             lastOutput = output;
             iterations++;
-            
+
             // 1. Process {{#each}} blocks (with {{else}})
             output = output.replace(NanoRenderer.REGEX_EACH, (match, arrayName, eachContent, elseContent) => {
                 const array = this.#getValue(data, arrayName);
@@ -132,7 +132,7 @@ export class NanoRenderer {
             output = output.replace(NanoRenderer.REGEX_IF, (match, conditionName, ifContent, elseContent) => {
                 const value = this.#getValue(data, conditionName);
                 let isTruthy = false;
-                
+
                 // Check for "truthiness" (not false, null, undefined, 0, "", or empty array)
                 if (Array.isArray(value)) {
                     isTruthy = value.length > 0;
@@ -149,7 +149,7 @@ export class NanoRenderer {
                 return ''; // No match and no else block
             });
         }
-        
+
         if (iterations === this.maxIterations) {
             console.error("Renderer reached max iterations. Possible infinite loop.");
             return "<p style='color:red;'>Error: Renderer timed out. Check for malformed blocks.</p>";

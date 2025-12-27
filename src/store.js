@@ -16,7 +16,7 @@ export class StateStore {
          * @description The current state of the store.
          */
         this._state = { ...initialState } || {};
-        
+
         /**
          * @private
          * @type {Set<Function>}
@@ -24,18 +24,34 @@ export class StateStore {
         this._subscribers = new Set();
     }
 
+    /**
+     * Subscribes a callback function to be executed whenever the state changes.
+     * @param {Function} callback - The function to call on state updates.
+     */
     subscribe(callback) {
         this._subscribers.add(callback);
     }
 
+    /**
+     * Unsubscribes a callback function from state updates.
+     * @param {Function} callback - The function to remove.
+     */
     unsubscribe(callback) {
         this._subscribers.delete(callback);
     }
 
+    /**
+     * Returns the current state of the store.
+     * @returns {object} The current state object (shallow copy).
+     */
     getState() {
         return this._state;
     }
 
+    /**
+     * Updates the store's state and notifies subscribers.
+     * @param {object} newState - The new state properties to merge.
+     */
     setState(newState) {
         this._state = { ...this._state, ...newState };
         this._subscribers.forEach(callback => callback());

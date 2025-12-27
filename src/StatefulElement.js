@@ -1,4 +1,5 @@
 import { loadHTML } from './html-loader.js';
+import { morph } from './dom-morph.js';
 
 /**
  * A state-driven base class for creating powerful, reactive Web Components.
@@ -223,6 +224,9 @@ export class StatefulElement extends HTMLElement {
         let selectionStart, selectionEnd;
         const activeEl = this.shadowRoot.activeElement;
 
+        // Capture focus state.
+        // Morphing generally preserves focus, but explicit handling ensures reliability
+        // during complex DOM updates involving node replacement.
         if (activeEl) {
             if (activeEl.id) {
                 activeElementId = activeEl.id;
@@ -234,19 +238,51 @@ export class StatefulElement extends HTMLElement {
         }
 
         this._removeEventListeners();
-        const fullHtml = strings.reduce((acc, str, i) => acc + str + (values[i] || ''), '');
-        this.shadowRoot.innerHTML = fullHtml;
 
-        this.shadowRoot.querySelectorAll('*').forEach(element => {
-            for (const attr of element.attributes) {
+        // Construct the new HTML string
+        let fullHtml;
+        if (Array.isArray(strings)) {
+            fullHtml = strings.reduce((acc, str, i) => acc + str + (values[i] || ''), '');
+        } else {
+            // Handle case where strings is just a string (passed from render())
+            fullHtml = strings;
+        }
+
+        // Create a temporary template to hold the new DOM structure
+        const tempTemplate = document.createElement('template');
+        tempTemplate.innerHTML = fullHtml;
+
+        // Preprocess template: convert on* attributes to stable data-swc-event-* attributes
+        // This prevents the "flash" in inspectors because we don't add/remove attributes constantly.
+        const walker = document.createTreeWalker(tempTemplate.content, NodeFilter.SHOW_ELEMENT);
+        let currentNode = walker.nextNode();
+        while (currentNode) {
+            const attrs = Array.from(currentNode.attributes);
+            for (const attr of attrs) {
                 if (attr.name.startsWith('on')) {
                     const eventName = attr.name.substring(2);
+                    currentNode.setAttribute(`data-swc-event-${eventName}`, attr.value);
+                    currentNode.removeAttribute(attr.name);
+                }
+            }
+            currentNode = walker.nextNode();
+        }
+
+        // Morph the shadowRoot to match the new structure
+        morph(this.shadowRoot, tempTemplate.content);
+
+        // Re-attach event listeners based on the stable data attributes
+        this.shadowRoot.querySelectorAll('*').forEach(element => {
+            for (const attr of element.attributes) {
+                if (attr.name.startsWith('data-swc-event-')) {
+                    const eventName = attr.name.substring(15); // 'data-swc-event-'.length
                     const handlerName = attr.value;
                     if (typeof this[handlerName] === 'function') {
                         const handler = this[handlerName].bind(this);
+                        // We do not remove the data-swc-event-* attribute here. It stays stable to prevent inspector flashing.
+                        // The event listener is attached, effectively "consuming" the intention of the attribute without modifying the DOM structure.
                         element.addEventListener(eventName, handler);
                         this._eventListeners.push({ element, eventName, handler });
-                        element.removeAttribute(attr.name);
                     } else {
                         console.warn(`Method "${handlerName}" not found on component <${this.tagName.toLowerCase()}>.`);
                     }
@@ -254,6 +290,7 @@ export class StatefulElement extends HTMLElement {
             }
         });
 
+        // Restore focus if lost (morphing usually keeps it, but if nodes were replaced it might be lost)
         let newActiveElement = null;
         if (activeElementId) {
             newActiveElement = this.shadowRoot.querySelector(`#${activeElementId}`);
@@ -261,7 +298,7 @@ export class StatefulElement extends HTMLElement {
             newActiveElement = this._getElementByPath(activeElementPath);
         }
 
-        if (newActiveElement) {
+        if (newActiveElement && document.activeElement !== newActiveElement && newActiveElement !== this.shadowRoot.activeElement) {
             newActiveElement.focus();
             if (typeof selectionStart === 'number' && typeof newActiveElement.setSelectionRange === 'function') {
                 newActiveElement.setSelectionRange(selectionStart, selectionEnd);
