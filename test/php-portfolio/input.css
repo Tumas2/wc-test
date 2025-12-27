@@ -4,8 +4,14 @@
     --font-sans: "Geist Mono", monospace;
 }
 
-a, router-link, .link {
-    @apply text-blue-700 hover:text-black underline cursor-pointer text-2xl;
+:root {
+    color-scheme: light dark;
+}
+
+a,
+router-link,
+.link {
+    @apply text-blue-700 hover:text-black underline cursor-pointer;
 }
 
 .max-w-content {
@@ -15,6 +21,8 @@ a, router-link, .link {
 html,
 body {
     @apply bg-white scroll-smooth;
+    /* color: light-dark(#333b3c, #efefec);
+    background-color: light-dark(#efedea, #223a2c); */
 }
 
 h2 {

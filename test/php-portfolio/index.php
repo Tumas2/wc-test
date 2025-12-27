@@ -37,6 +37,16 @@ $base_url = '/swc/test/php-portfolio';
     // print('<pre>');
     // print_r($_SERVER);
     // print('</pre>');
+
+    $title = ' PHP 8.5 Released boop';
+
+    $slug = $title
+        |> trim(...)
+        |> (fn($str) => str_replace(' ', '-', $str))
+        |> (fn($str) => str_replace('.', '', $str))
+        |> strtolower(...);
+
+    echo '<div style="color:black">'.$slug.'</div>';
     ?>
     <router-container base-path="<?= $base_url; ?>">
         <main-header></main-header>

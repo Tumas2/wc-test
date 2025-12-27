@@ -1,4 +1,4 @@
-import { StatefulElement } from "swc";
+import { StatefulElement } from "./StatefulElement.js";
 
 /**
  * A simplified, regex-based template renderer.
@@ -38,7 +38,7 @@ export class NanoRenderer {
 
         // Handle 'this' when it refers to the object context
         if (path === 'this' && context?.this !== undefined) {
-             return context.this;
+            return context.this;
         }
         
         let current = context;
@@ -56,6 +56,11 @@ export class NanoRenderer {
                     current = current[part];
                 }
             }
+
+            if (typeof current === 'function') {
+                return current();
+            }
+
             // Return the value, even if it's null, undefined, 0, false, or ''
             return current;
         } catch (e) {

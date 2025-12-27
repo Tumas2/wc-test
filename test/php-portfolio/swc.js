@@ -18,28 +18,28 @@ import globalStyles from './output.css' with { type: 'css' };
 const renderer = new NanoRenderer();
 
 export class CustomStatefulElement extends StatefulElement {
-    getRenderer = () => renderer.render
-    getStyles = () => [globalStyles]
+    getRenderer() { return renderer.render }
+    getStyles() { return [globalStyles] }
 }
 
 export class NanoRenderRouterContainer extends RouterContainer {
-    getRenderer = () => renderer.render
-    getStyles = () => [globalStyles]
+    getRenderer() { return renderer.render }
+    getStyles() { return [globalStyles] }
 }
 
 export class NanoRenderRouterSwitch extends RouterSwitch {
-    getRenderer = () => renderer.render
-    getStyles = () => [globalStyles]
+    getRenderer() { return renderer.render }
+    getStyles() { return [globalStyles] }
 }
 
 // export class NanoRenderRouterRoute extends RouterRoute {
-//     getRenderer = () => renderer.render
-//     getStyles = () => [globalStyles]
+//     getRenderer() { return renderer.render }
+//     getStyles() { return [globalStyles] }
 // }
 
 export class NanoRenderRouterLink extends RouterLink {
-    getRenderer = () => renderer.render
-    getStyles = () => [globalStyles]
+    getRenderer() { return renderer.render }
+    getStyles() { return [globalStyles] }
 }
 
 customElements.define('router-container', NanoRenderRouterContainer);
