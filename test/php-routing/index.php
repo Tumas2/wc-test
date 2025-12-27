@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <?php
-$base_url = '/swc/test/php-routing';
+$base_url = '/test/php-routing'; //'/swc/test/php-routing'
 ?>
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <base href="<?= $base_url; ?>/">
+    <base href="<?php echo $base_url; ?>/">
 
     <script type="importmap">
         {
@@ -20,8 +19,8 @@ $base_url = '/swc/test/php-routing';
     </script>
 
     <!-- <link rel="modulepreload" href="./test/components/index.js" /> -->
-    <script type="module" src="./components/index.js"></script>
-    <link rel="stylesheet" href="./styles.css?ver=<?= time(); ?>">
+    <script type="module" src="<?php echo $base_url; ?>/components/index.js"></script>
+    <link rel="stylesheet" href="<?php echo $base_url; ?>/styles.css?ver=<?php echo time(); ?>">
 </head>
 
 <body>
@@ -31,7 +30,7 @@ $base_url = '/swc/test/php-routing';
     // print_r($_SERVER);
     // print('</pre>');
     ?>
-    <router-container base-path="<?= $base_url; ?>">
+    <router-container base-path="<?php echo $base_url; ?>">
         <header class="navigation">
             <nav>
                 <router-link to="/">Home</router-link>
