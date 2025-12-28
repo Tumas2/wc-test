@@ -59,3 +59,101 @@ SWC (Stateful Web Components) is a pure Vanilla JavaScript library for building 
     - **Test Root**: `http://swc.test:8080/test/`
     - **Specific Test Example**: `http://swc.test:8080/test/php-routing` (for routing components).
 - **Method**: Currently manual/visual verification in the browser.
+
+## Best Practices
+
+When building components, follow the "Folder-per-Component" pattern to ensure modularity and clean separation of concerns.
+
+### Component Structure
+Each component should live in its own directory (e.g., `components/user-greeting/`) containing:
+- `component.js`: Class definition and logic.
+- `markup.html`: The HTML template (if not using inline `view()`).
+- `style.css`: Component-specific styles.
+
+### Example: `user-greeting`
+
+**File Tree:**
+```
+test/php-routing/components/user-greeting/
+├── component.js
+├── markup.html
+└── style.css
+```
+
+**Implementation Pattern (`component.js`):**
+```javascript
+import { NanoRenderStatefulElement } from 'swc';
+import { userStore } from '../../stores/userStore.js';
+import componentStyle from './style.css' with { type: 'css' }; // Import CSS module
+
+class UserGreeting extends NanoRenderStatefulElement {
+
+    // 1. encapsulated styles
+    getStyles() {
+        return [componentStyle];
+    }
+
+    // 2. External template path (resolved relative to current file)
+    getTemplatePath() {
+        return new URL('markup.html', import.meta.url).pathname;
+    }
+
+    // 3. Initial local state/data
+    initialData() {
+        return {
+            person: { name: "Alex", isAdmin: true }
+        };
+    }
+
+    // 4. Connect to global stores
+    getStores() {
+        return {
+            user: userStore,
+        };
+    }
+}
+
+customElements.define('user-greeting', UserGreeting);
+```
+
+### Key Principles
+1.  **Separation**: Keep logic, view, and style in separate files for maintainability.
+2.  **CSS Modules**: Use `import ... with { type: 'css' }` for native CSS module support.
+3.  **Relative Paths**: Use `import.meta.url` to resolve paths for external assets like templates.
+4.  **Store Connection**: explicit dependency injection via `getStores()`.
+
+## Server-Side Rendering (SSR)
+
+SWC is designed to work seamlessly with server-side rendering (e.g., PHP, Node.js) to improve SEO and First Contentful Paint (FCP).
+
+### Mechanism
+Any SWC component can be server-side rendered. If the server outputs HTML inside the custom element, the component can be designed to use that as its initial content/template. This eliminates the "pop-in" effect and ensures content is visible immediately.
+
+### Implementation Pattern (PHP Example)
+1.  **Backend Check**: Determine what content should be visible (e.g., based on URI or state).
+2.  **Inject Content**: Output the HTML directly inside the component tags.
+
+#### Example: Routing
+The `<router-route>` component is a common use case where content is conditionally rendered by the server based on the path.
+
+```php
+<router-switch>
+    <!-- Simple Route: Strict Match -->
+    <router-route path="/" src="./pages/home-page.html">
+        <?php 
+        if ($_SERVER['REQUEST_URI'] === $base_url . '/') {
+            echo file_get_contents(__DIR__ . '/pages/home-page.html');
+        } 
+        ?>
+    </router-route>
+
+    <!-- Dynamic/Wildcard Route: Prefix Match -->
+    <router-route path="/users/*" src="./pages/users-page.html">
+        <?php 
+        if (strpos($_SERVER['REQUEST_URI'], $base_url . '/users') === 0) {
+            echo file_get_contents(__DIR__ . '/pages/users-page.html');
+        } 
+        ?>
+    </router-route>
+</router-switch>
+```

@@ -85,6 +85,7 @@ export class StatefulElement extends HTMLElement {
      * @param {object} newState - The new state to merge into the store.
      */
     setState(storeName, newState) {
+        console.warn('setState() is deprecated, use setState() directly on store instead.')
         const store = this._stores[storeName];
         if (store) {
             store.setState(newState);
@@ -99,6 +100,7 @@ export class StatefulElement extends HTMLElement {
      * @param {string} storeName The key of the store as defined in getStores().
      */
     resetState(storeName) {
+        console.warn('resetState() is deprecated, use resetState() directly on store instead.')
         const store = this._stores[storeName];
         if (store && typeof store.resetState === 'function') {
             store.resetState();
@@ -112,8 +114,11 @@ export class StatefulElement extends HTMLElement {
      */
     render() {
         this._syncState();
+
         const initialComponentData = this.initialData();
-        const context = { ...initialComponentData, ...this.state };
+        const computedData = this.computed(this.state);
+
+        const context = { ...initialComponentData, ...computedData, ...this.state };
         const renderer = this.getRenderer();
         const templateString = this.template || this.view() || '';
         const finalHtml = renderer(templateString, context);
@@ -165,6 +170,17 @@ export class StatefulElement extends HTMLElement {
      * @returns {object}
      */
     initialData() {
+        console.warn('initialData() is deprecated, use computed() instead.')
+        return {};
+    }
+
+    /**
+     * @abstract
+     * Override to calculate values derived from state for the template.
+     * Runs on every render.
+     * @returns {object}
+     */
+    computed(state) {
         return {};
     }
 
