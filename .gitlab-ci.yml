@@ -1,0 +1,29 @@
+image: node:lts
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+
+stages:
+  - build
+  - release
+
+build_release:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_TAG
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@latest --activate
+    - pnpm config set store-dir .pnpm-store
+  script:
+    - pnpm install
+    - pnpm run build
+    - apt-get update && apt-get install -y zip
+    - cd dist
+    - zip -r ../swc-$CI_COMMIT_TAG.zip ./*
+  artifacts:
+    paths:
+      - swc-$CI_COMMIT_TAG.zip
+    expire_in: 1 week
