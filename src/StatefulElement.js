@@ -115,10 +115,9 @@ export class StatefulElement extends HTMLElement {
     render() {
         this._syncState();
 
-        const initialComponentData = this.initialData();
         const computedData = this.computed(this.state);
 
-        const context = { ...initialComponentData, ...computedData, ...this.state };
+        const context = { ...computedData, ...this.state };
         const renderer = this.getRenderer();
         const templateString = this.template || this.view() || '';
         const finalHtml = renderer(templateString, context);

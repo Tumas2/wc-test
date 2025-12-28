@@ -90,7 +90,7 @@ export class RouterSwitch extends NanoRenderStatefulElement {
         } else {
             this.store.setLoading(false)
             const renderer = this.getRenderer();
-            const context = { ...this.initialData(), ...this.state };
+            const context = { ...this.computed(), ...this.state };
             this.html([renderer(finalHtml, context)]);
         }
 

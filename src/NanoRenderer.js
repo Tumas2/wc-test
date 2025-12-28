@@ -68,6 +68,7 @@ export class NanoRenderer {
 
                 } else if (type === '#each') {
                     // {{#each list}}
+                    code += `{\n`; // Open new scope
                     code += `const list = get('${this.str(args)}');\n`;
                     code += `if (Array.isArray(list)) {\n`;
                     code += `  list.forEach((item, index) => {\n`;
@@ -78,6 +79,7 @@ export class NanoRenderer {
                     code += `    data = stack;\n`; // pop scope
                     code += `  });\n`;
                     code += `}\n`;
+                    code += `}\n`; // Close new scope
 
                 } else if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
                     // {{{ unescaped }}}
