@@ -1,4 +1,5 @@
-import { NanoRenderStatefulElement, StatefulElement } from 'swc';
+import { StatefulElement } from '../../StatefulElement.js';
+import { NanoRenderStatefulElement } from '../../NanoRenderer.js';
 
 export class RouterLink extends StatefulElement {
     constructor() {
@@ -9,10 +10,13 @@ export class RouterLink extends StatefulElement {
     }
 
     connectedCallback() {
-        // 1. Try to find a container in the light DOM (for top-level links)
-        const provider = this._findStoreProvider();
+        // 1. Try to find a container in the light DOM or up the shadow tree
+        let provider = this._findStoreProvider();
 
-        // 2. If not found, we're likely in a shadow DOM. Get the host element.
+        // 2. If not found via the standard walker, check the immediate root host 
+        // (Just in case _findStoreProvider didn't catch a specific case, though it should. 
+        //  We keep this fallback but safe with 'let' just to be sure to match original intent 
+        //  while fixing the crash).
         if (!provider) {
             const rootNode = this.getRootNode();
             if (rootNode.host) {
@@ -25,7 +29,7 @@ export class RouterLink extends StatefulElement {
         if (!provider || !provider.store) {
             throw new Error('<router-link> must be placed inside a <router-container> or <router-switch>.');
         }
-        
+
         this.store = provider.store;
         super.connectedCallback();
     }

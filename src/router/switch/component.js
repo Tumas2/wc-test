@@ -1,5 +1,6 @@
-import { StatefulElement, NanoRenderStatefulElement } from 'swc';
-import { loadHTML } from '../../../src/html-loader.js';
+import { NanoRenderStatefulElement } from '../../NanoRenderer.js';
+import { StatefulElement } from '../../StatefulElement.js';
+import { loadHTML } from '../../html-loader.js';
 
 export class RouterSwitch extends NanoRenderStatefulElement {
     constructor() {
@@ -10,17 +11,11 @@ export class RouterSwitch extends NanoRenderStatefulElement {
     }
 
     connectedCallback() {
-        // 1. Try to find a container in the light DOM (for top-level switches)
-        let provider = this.closest('router-container');
+        // 1. Use the robust _findStoreProvider from StatefulElement to find the store
+        // This handles Light DOM and Shadow DOM boundaries automatically.
+        const provider = this._findStoreProvider();
 
-        // 2. If not found, we're a nested switch in a shadow DOM. Get the host.
-        if (!provider) {
-            const rootNode = this.getRootNode();
-            if (rootNode.host) {
-                // The host will be the parent <router-switch>
-                provider = rootNode.host;
-            }
-        }
+        // (Removed manual specific logic which was less robust than _findStoreProvider)
 
         // 3. Check the provider for the store.
         if (!provider || !provider.store) {
