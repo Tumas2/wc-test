@@ -99,7 +99,7 @@ class UserGreeting extends NanoRenderStatefulElement {
     }
 
     // 3. Initial local state/data
-    initialData() {
+    computed() {
         return {
             person: { name: "Alex", isAdmin: true }
         };

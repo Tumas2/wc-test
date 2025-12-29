@@ -6,7 +6,7 @@ class MainHeader extends CustomStatefulElement {
         return new URL('markup.html', import.meta.url).pathname;
     }
 
-    initialData() {
+    computed() {
         return {
             // name: 'Link',
             links: [

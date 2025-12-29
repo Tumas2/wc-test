@@ -16,7 +16,7 @@ class UserGreeting extends NanoRenderStatefulElement {
         return new URL('markup.html', import.meta.url).pathname
     }
 
-    initialData() {
+    computed() {
         return {
             person: {
                 name: "Alex",

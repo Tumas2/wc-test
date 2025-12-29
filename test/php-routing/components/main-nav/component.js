@@ -17,13 +17,13 @@ class MainNavigation extends NanoRenderStatefulElement {
 
     getStyles() {
         return [
-            resetStyles, 
+            resetStyles,
             // globalStyles, 
             localStyles
         ];
     }
 
-    initialData() {
+    computed() {
         return navStructure;
     }
 

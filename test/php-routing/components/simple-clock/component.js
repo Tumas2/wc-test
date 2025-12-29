@@ -26,7 +26,7 @@ class SimpleClock extends NanoRenderStatefulElement {
         this.resetState('counter');
     }
 
-    initialData() {
+    computed() {
         const date = new Date();
 
         return {
