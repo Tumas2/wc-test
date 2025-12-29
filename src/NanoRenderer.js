@@ -30,15 +30,31 @@ export class NanoRenderer {
 
         let code = "let out = '';\n";
         code += "const escape = (str) => String(str ?? '').replace(/[&<>'\"/]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',\"'\":'&#39;','\"':'&quot;','/':'&#x2F;'})[c]);\n";
+        code += "const sanitize = (str) => {\n";
+        code += "  const doc = new DOMParser().parseFromString(str || '', 'text/html');\n";
+        code += "  // Remove dangerous tags\n";
+        code += "  const badTags = ['script', 'iframe', 'object', 'embed', 'style', 'link', 'meta'];\n";
+        code += "  badTags.forEach(tag => doc.querySelectorAll(tag).forEach(el => el.remove()));\n";
+        code += "  // Remove event handlers and javascript: URIs\n";
+        code += "  const all = doc.querySelectorAll('*');\n";
+        code += "  all.forEach(el => {\n";
+        code += "    Array.from(el.attributes).forEach(attr => {\n";
+        code += "      if (attr.name.startsWith('on')) el.removeAttribute(attr.name);\n";
+        code += "      if ((attr.name === 'href' || attr.name === 'src') && attr.value.trim().toLowerCase().startsWith('javascript:')) el.removeAttribute(attr.name);\n";
+        code += "    });\n";
+        code += "  });\n";
+        code += "  return doc.body.innerHTML;\n";
+        code += "};\n";
+
         code += "const get = (path) => {\n";
         code += "  if (path === 'this') return data;\n";
         code += "  return path.split('.').reduce((obj, key) => (obj && obj[key] !== undefined) ? obj[key] : undefined, data);\n";
         code += "};\n";
         code += "with(data) {\n";
 
-        // Tokenize: Split by tags {{ ... }}
-        // We use a regex that captures the content of the tag
-        const tokens = template.split(/{{(.*?)}}/g);
+        // Tokenize: Split by tags {{ ... }} or {{{ ... }}}
+        // We use a regex that captures the entire tag including braces
+        const tokens = template.split(/((?:{{{[\s\S]*?}}})|(?:{{[\s\S]*?}}))/g);
 
         for (let i = 0; i < tokens.length; i++) {
             const token = tokens[i];
@@ -50,7 +66,11 @@ export class NanoRenderer {
                 }
             } else {
                 // Tag node
-                const trimmed = token.trim();
+                const isTriple = token.startsWith('{{{');
+                // Remove braces
+                const content = isTriple ? token.slice(3, -3) : token.slice(2, -2);
+
+                const trimmed = content.trim();
                 const parts = trimmed.split(/\s+/);
                 const type = parts[0];
                 const args = parts.slice(1).join(' ');
@@ -81,19 +101,33 @@ export class NanoRenderer {
                     code += `}\n`;
                     code += `}\n`; // Close new scope
 
-                } else if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+                } else if (isTriple) {
                     // {{{ unescaped }}}
-                    // content is inside the extra braces: { value }
-                    const raw = trimmed.slice(1, -1).trim();
+                    let raw = trimmed;
+                    let isSafe = false;
+
+                    // Check for 'safe' keyword: {{{ safe content }}}
+                    if (raw.startsWith('safe ')) {
+                        isSafe = true;
+                        raw = raw.substring(5).trim();
+                    }
+
                     // Check for fallback: var || "fallback"
                     const fallbackMatch = raw.match(/^(.*?)\s*\|\|\s*(["'])(.*?)\2$/);
                     let valExpr, fallback;
+
                     if (fallbackMatch) {
                         valExpr = `get('${this.str(fallbackMatch[1].trim())}')`;
                         fallback = JSON.stringify(fallbackMatch[3]); // JSON.stringify is already safe for literals
-                        code += `out += (${valExpr} ?? ${fallback});\n`;
                     } else {
-                        code += `out += (get('${this.str(raw)}') ?? '');\n`;
+                        valExpr = `get('${this.str(raw)}')`;
+                        fallback = "''";
+                    }
+
+                    if (isSafe) {
+                        code += `out += sanitize(${valExpr} ?? ${fallback});\n`;
+                    } else {
+                        code += `out += (${valExpr} ?? ${fallback});\n`;
                     }
 
                 } else {

@@ -117,9 +117,9 @@ export class BlogPage extends NanoRenderStatefulElement {
                     <article class="post-card">
                         <div class="post-date">{{ this.date }}</div>
                         <h3>
-                             <router-link to="/blog/{{ this.slug }}">{{ this.title.rendered }}</router-link>
+                            <router-link to="/blog/{{ this.slug }}">{{{ safe this.title.rendered }}}</router-link>
                         </h3>
-                        <div class="post-excerpt">{{ this.excerpt.rendered }}</div>
+                        <div class="post-excerpt">{{{ this.excerpt.rendered }}}</div>
                         <router-link class="read-more" to="/blog/{{ this.slug }}">Read more →</router-link>
                     </article>
                 {{/each}}
