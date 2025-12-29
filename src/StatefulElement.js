@@ -80,36 +80,6 @@ export class StatefulElement extends HTMLElement {
     }
 
     /**
-     * Updates the state of a specified store, triggering a re-render.
-     * @param {string} storeName - The key of the store as defined in getStores().
-     * @param {object} newState - The new state to merge into the store.
-     */
-    setState(storeName, newState) {
-        console.warn('setState() is deprecated, use setState() directly on store instead.')
-        const store = this._stores[storeName];
-        if (store) {
-            store.setState(newState);
-        } else {
-            console.log(storeName)
-            console.warn(`Store with name "${storeName}" not found.`);
-        }
-    }
-
-    /**
-     * Resets a specific store to its initial state.
-     * @param {string} storeName The key of the store as defined in getStores().
-     */
-    resetState(storeName) {
-        console.warn('resetState() is deprecated, use resetState() directly on store instead.')
-        const store = this._stores[storeName];
-        if (store && typeof store.resetState === 'function') {
-            store.resetState();
-        } else {
-            console.warn(`Store with name "${storeName}" not found or it does not have a resetState method.`);
-        }
-    }
-
-    /**
      * The main render method. Passes template and data to the chosen renderer.
      */
     render() {

@@ -21,5 +21,27 @@ export default [
             sourcemap: true
         },
         plugins: [terser()]
+    },
+    // Router builds
+    // Standard build
+    {
+        input: 'src/router/index.js',
+        output: {
+            file: 'dist/swc-router.js',
+            format: 'umd',
+            name: 'SWC Router',
+            sourcemap: true
+        }
+    },
+    // Minified build
+    {
+        input: 'src/router/index.js',
+        output: {
+            file: 'dist/swc-router.min.js',
+            format: 'umd',
+            name: 'SWC Router',
+            sourcemap: true
+        },
+        plugins: [terser()]
     }
 ];

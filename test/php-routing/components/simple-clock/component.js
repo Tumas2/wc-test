@@ -39,13 +39,9 @@ class SimpleClock extends NanoRenderStatefulElement {
     }
 
     async onMount() {
-        // const response = await fetch('/api/data');
-        // const data = await response.json();
-        // this.setState('myStore', { items: data });
-
         this.intervalID = setInterval(() => {
             const date = new Date();
-            this.setState('counter', {
+            counterStore.setState({
                 seconds: date.getSeconds(),
                 minutes: date.getMinutes(),
                 hour: date.getHours()

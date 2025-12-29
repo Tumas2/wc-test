@@ -9,12 +9,12 @@ class CounterControl extends NanoRenderStatefulElement {
 
     intervalID = null;
 
-	getTemplatePath() {
+    getTemplatePath() {
         return new URL('markup.html', import.meta.url).pathname;
-	}
+    }
 
     getStyles() {
-      	return [globalStyles, localStyles];
+        return [globalStyles, localStyles];
     }
 
     getStores() {
@@ -22,23 +22,13 @@ class CounterControl extends NanoRenderStatefulElement {
     }
 
     increment() {
-        this.setState('counter', { count: this.state.counter.count + 1 });
+        counterStore.setState({ count: this.state.counter.count + 1 });
         console.log('Increment button clicked!');
     }
 
     onUnmount() {
         // clearInterval(this.intervalID);
         this.resetState('counter');
-    }
-
-    async onMount() {
-        // const response = await fetch('/api/data');
-        // const data = await response.json();
-        // this.setState('myStore', { items: data });
-
-        // this.intervalID = setInterval(() => {
-        //     this.increment();
-        // }, 1000)
     }
 
 }

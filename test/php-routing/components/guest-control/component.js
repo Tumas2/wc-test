@@ -6,12 +6,12 @@ import localStyles from './style.css' with { type: 'css' };
 
 class GuestControl extends NanoRenderStatefulElement {
 
-	getTemplatePath() {
+    getTemplatePath() {
         return new URL('markup.html', import.meta.url).pathname;
-	}
+    }
 
     getStyles() {
-      	return [globalStyles, localStyles];
+        return [globalStyles, localStyles];
     }
 
     getStores() {
@@ -19,7 +19,7 @@ class GuestControl extends NanoRenderStatefulElement {
     }
 
     onchange(e) {
-        this.setState('user', { name: e.target.value });
+        userStore.setState({ name: e.target.value });
     }
 }
 
